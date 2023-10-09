@@ -1,0 +1,195 @@
+﻿@model ExpertransDaoTao.ViewModel.StudentHistoryViewModel
+@using System.Security.Claims;
+@using Newtonsoft.Json;
+@{
+    ViewData["Title"] = "Lịch sử thi";
+    Layout = "_LayoutStudent";
+    string idHistory = ViewData["idHistory"] as string;
+    Students student = Model.Students.FirstOrDefault(st => st.UserName == User.FindFirst(ClaimTypes.NameIdentifier).Value);
+    List<TestHistory> histories = Model.TestHistorys.Where(tsh => tsh.StudentId == student.Id).ToList();
+    TestHistory history = new TestHistory();
+    List<Question> questions = new List<Question>();
+    int totalQuestion = 0;
+    if (!string.IsNullOrEmpty(idHistory) && int.Parse(idHistory) != 0)
+    {
+        history = Model.TestHistorys.FirstOrDefault(t => t.HistoryId == int.Parse(idHistory));
+        if (history != null && history.EndDate != null)
+        {
+            //get student check result
+            if (!string.IsNullOrEmpty(history.StudentResult))
+            {
+                List<JsonResultModel> listrs = JsonConvert.DeserializeObject<List<JsonResultModel>>(history.StudentResult);
+                foreach (JsonResultModel qrs in listrs)
+                {
+                    totalQuestion += qrs.Result.Count();
+                }
+            }
+        }
+    }
+}
+<link rel="stylesheet" href="~/css/coursestudent.css">
+
+<!-- Content Header (Page header) -->
+<section class="content-header">
+    <div class="container-fluid">
+        <div class="row mb-2">
+            <div class="col-sm-6">
+                <h1>
+                    Lịch Sử
+                </h1>
+            </div>
+            <div class="col-sm-6">
+                <ol class="breadcrumb float-sm-right">
+                    <li class="breadcrumb-item">Học Viên</li>
+                    <li class="breadcrumb-item active">Lịch sử</li>
+                </ol>
+            </div>
+        </div>
+    </div><!-- /.container-fluid -->
+</section>
+
+<!-- Main content -->
+@if (!string.IsNullOrEmpty(idHistory) && int.Parse(idHistory) != 0)
+{
+    <section class="content">
+        <div class="card card-primary card-outline">
+            <div class="card-header d-flex">
+                <a class="col-2 link" href="/Student/History"><i class="fas fa-arrow-left"></i></a>
+                <h3 class="card-title col-10 text-right">
+                    @idHistory
+                </h3>
+            </div>
+            <div class="card-body">
+                <strong><i class="fas fa-user"></i>&nbsp;Người Làm Bài</strong>
+
+                <p class="text-muted">
+                    @student.Name
+                </p>
+                <hr>
+                <strong><i class="fas fa-check-circle"></i>&nbsp;Số câu đúng</strong>
+
+                <p class="text-muted">
+                    @(history.Total.GetValueOrDefault(0) + history.WritingScore.GetValueOrDefault(0)) / @history.TotalScore.GetValueOrDefault(0)
+                </p>
+
+                <hr>
+                <strong><i class="fas fa-calendar"></i>&nbsp;Thời Gian Nộp Bài</strong>
+
+                <p class="text-muted">
+                    @if (history.EndDate == null)
+                    {
+                        @("Chưa nộp bài");
+                    }
+                    else
+                    { @history.EndDate;
+                }
+                </p>
+
+                <hr>
+            </div>
+            <!-- /.card -->
+        </div>
+    </section>
+}
+else
+{
+    <section class="content">
+        <div class="container-fluid">
+            <div class="row">
+                <div class="col-md-12">
+                    <div class="card">
+                        <div class="card-header">
+                            <h3 class="card-title">Lịch Sử Làm Bài</h3>
+                        </div>
+                        <!-- /.card-header -->
+                        <div class="card-body">
+                            <table class="table table-bordered history-table">
+                                <thead>
+                                    <tr>
+                                        <th>#</th>
+                                        <th>Người Làm</th>
+                                        @*<th>Thời Gian Bắt Đầu</th>*@
+                                        <th>Thời Gian Nộp Bài</th>
+                                        <th>Điểm</th>
+                                        <th>Tổng Điểm</th>
+
+                                        @*<th>Trạng thái</th>
+        <th></th>*@
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach (TestHistory th in histories)
+                                    {
+                                        <tr>
+                                            <td>@th.HistoryId</td>
+                                            <td>@Model.Students.FirstOrDefault(s => s.Id == th.StudentId).Name</td>
+                                            <td>
+                                                @if (th.EndDate == null)
+                                                {
+                                                    @("Chưa đầy đủ");
+                                                }
+                                                else
+                                                { @th.EndDate;
+                                            }
+                                            </td>
+                                            <td>  @(th.Total.GetValueOrDefault(0) + th.WritingScore.GetValueOrDefault(0)) </td>
+                                            <td>@th.TotalScore.GetValueOrDefault(0)</td>
+                                            @*@if (th.Status == 0 || th.Status == null)
+                                                {
+                                                    <td class="text-danger">Chưa đầy đủ</td>
+                                                }
+                                                else if (th.Status == 1)
+                                                {
+                                                    <td class="text-warning">Chưa chấm câu hỏi tự luận, viết lại câu</td>
+                                                }
+                                                else if (th.Status == 2)
+                                                {
+                                                    <td class="text-success">Hoàn thành</td>
+                                                }
+                                                else
+                                                {
+                                                    <td class="text-success">Đã chấm câu hỏi tự luận, viết lại câu</td>
+                                                }
+                                                <td><a class="btn btn-info text-center" href="/Student/History?idHistory=@th.HistoryId">Chi Tiết</a></td>*@
+                                        </tr>
+                                    }
+                                </tbody>
+                            </table>
+                        </div>
+                        <!-- /.card-body -->
+
+                    </div>
+                    <!-- /.card -->
+                </div>
+                <!-- /.col -->
+            </div>
+            <!-- /.row -->
+        </div><!-- /.container-fluid -->
+    </section>
+    <!-- /.content -->
+
+}
+@section Scripts {
+    <script>
+        $(document).ready(function () {
+            //Static scroll bar
+            $("body").css("overflow", "scroll");
+            $('.history-table').DataTable({
+                responsive: true,
+                language: {
+                    emptyTable: "Không có bản ghi nào để hiển thị",
+                    info: "Hiển thị _START_ đến _END_ trong _TOTAL_ lịch sử",
+                    lengthMenu: "Hiển thị _MENU_ lịch sử",
+                    search: "Tìm kiếm:",
+                    paginate: {
+                        "first": "First",
+                        "last": "Last",
+                        "next": ">>",
+                        "previous": "<<"
+                    }
+                },
+                pageLength: 20
+            });
+        });
+    </script>
+}

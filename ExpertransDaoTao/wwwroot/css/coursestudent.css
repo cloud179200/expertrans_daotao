@@ -1,0 +1,76 @@
+﻿.select-for-type-2 {
+    background-color: #f4f3f1;
+    transition: 0.2s;
+    cursor: pointer;
+    border-radius: 20px;
+}
+
+    .select-for-type-2:hover {
+        background-color: rgb(107 195 255)
+    }
+
+.select-for-type-1 {
+    background-color: #f4f3f1;
+    transition: 0.2s;
+    cursor: pointer;
+    border-radius: 20px;
+}
+
+    .select-for-type-1:hover {
+        background-color: rgb(107 195 255)
+    }
+
+.select-for-type-6 {
+    background-color: #f4f3f1;
+    transition: 0.2s;
+    cursor: pointer;
+    border-radius: 20px;
+}
+
+    .select-for-type-6:hover {
+        background-color: rgb(107 195 255)
+    }
+
+.input-text-for-type-3 {
+    outline: none;
+    border: none;
+    width: 80px;
+}
+.select-for-type-2-homework {
+    background-color: #f4f3f1;
+    transition: 0.2s;
+    cursor: pointer;
+    border-radius: 20px;
+}
+
+    .select-for-type-2-homework:hover {
+        background-color: rgb(107 195 255)
+    }
+
+.select-for-type-1-homework {
+    background-color: #f4f3f1;
+    transition: 0.2s;
+    cursor: pointer;
+    border-radius: 20px;
+}
+
+    .select-for-type-1-homework:hover {
+        background-color: rgb(107 195 255)
+    }
+
+.select-for-type-6-homework {
+    background-color: #f4f3f1;
+    transition: 0.2s;
+    cursor: pointer;
+    border-radius: 20px;
+}
+
+    .select-for-type-6-homework:hover {
+        background-color: rgb(107 195 255)
+    }
+
+.input-text-for-type-3-homework {
+    outline: none;
+    border: none;
+    width: 80px;
+}

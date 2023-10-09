@@ -1,0 +1,784 @@
+﻿@model ExpertransDaoTao.ViewModel.TestDetailViewModel
+@{
+    ViewData["Title"] = "Chi tiết bài thi";
+    Layout = "_LayoutAdmin";
+}
+<section class="content-header">
+    <div class="container-fluid">
+        <div class="row mb-2">
+            <div class="col-sm-6">
+                <h1>Đề thi : @Model.TestName</h1>
+            </div>
+            <div class="col-sm-6">
+                <ol class="breadcrumb float-sm-right">
+                    <li class="breadcrumb-item"><a href="/admin">Home</a></li>
+                    <li class="breadcrumb-item"><a href="/admin/test">Đề thi</a></li>
+                    <li class="breadcrumb-item active breadcrumb-testName">@Model.TestName</li>
+                </ol>
+            </div>
+        </div>
+    </div>
+</section>
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-md-12">
+            <div class="card card-primary">
+                <div class="card-header">
+                    <h3 class="card-title test-title">Thông tin đề thi</h3>
+                </div>
+                <div class="card-body row">
+                    <div class="col-10">
+                        <div style="margin: 10px;">
+                            <form>
+                                <div class="form-group row">
+                                    <label class="col-sm-2 col-form-label">Đề thi: </label>
+                                    <div class="col-sm-6">
+                                        <input type="text" class="form-control" id="test-name" value="@Model.TestName">
+                                    </div>
+                                </div>
+                                <div class="form-group row">
+                                    <label for="inputPassword3" class="col-sm-2 col-form-label">Tổng thời gian:</label>
+                                    <div class="col-sm-1">
+                                        <input class="form-control" id="test-time" text-align: center" value="@Model.Time" disabled />
+                                    </div>
+                                    <p class="col-sm-2 col-form-label">phút</p>
+                                </div>
+                                <div class="form-group row">
+                                    <label class="col-sm-2 col-form-label">Lớp học:</label>
+                                    <div class="col-sm-10">
+                                        <select class="form-control course-select" multiple="multiple">
+                                            @foreach(var c in Model.Courses)
+                                            {
+                                                <option value="@c.CourseId">@c.CourseName</option>
+                                            }
+                                        </select>
+                                        <small class="text-danger">*Gợi ý: Bạn có thể thêm lớp bằng cách nhập tên vào ô phía trên sau đó nhấn "Enter"</small>
+                                    </div>
+                                </div>
+                                <div class="form-group row">
+                                    <label class="col-sm-2 col-form-label">Giảng viên chấm bài:</label>
+                                    <div class="col-sm-10">
+                                        <select class="form-control teacher-select" multiple="multiple">
+                                            @foreach(var t in Model.Teachers)
+                                            {
+                                                <option value="@t.Id">@t.UserName - @t.Name</option>
+                                            }
+                                        </select>
+                                        <small class="text-danger">*Gợi ý: Bạn có thể thêm giảng viên bằng cách nhập tên vào ô phía trên sau đó nhấn "Enter"</small>
+                                    </div>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                    <div class="col-2">
+                        <button type="button" class="btn btn-lg" id="test-status">Hello</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-md-12">
+            <div class="card card-default">
+                <div class="card-header">
+                    <h3 class="card-title test-title">Nội dung đề thi</h3>
+                </div>
+                <div class="card-body">
+                    <ul class="nav nav-tabs" id="test-tab-ul" role="tablist">
+                    </ul>
+                    <div class="tab-content" style="margin-top: 15px">
+                    </div>
+                </div>
+                <div class="card-footer">
+                    <button type="button" class="btn btn-outline-info save-changes">Lưu thay đổi</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@*Add question modal*@
+<div class="modal fade" id="modal-add-question" tabindex="-1" role="dialog" aria-labelledby="exampleModalCenterTitle" aria-hidden="true">
+    <div class="modal-dialog modal-xl modal-dialog-centered" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="modal-add-question-title">Các câu hỏi trong hệ thống</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <table id="table-add-question" class="table table-bordered table-hover" style=width: 100%;">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Nội dung</th>
+                            <th>Loại câu hỏi</th>
+                            <th>Thẻ</th>
+                            <th>Thao tác</th>
+                        </tr>
+                    </thead>
+                </table>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Đóng</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        var testId = @Model.TestId;
+        var testQuestions = @Html.Raw(Model.TestQuestions);
+        var partIndex = 0;
+        var currentSelectedContent = null;
+        var courseIds = (("@Model.CourseIds").split(",")).filter((e) => e);
+        var teacherIds = (("@Model.TeacherIds").split(",")).filter((e) => e);
+        var questionIds = [];
+        var selectedCourseObject =  @Json.Serialize(Model.SelectedCourses);
+        $(document).ready(function () {
+            //Static scroll bar
+            $("body").css("overflow", "scroll");
+            //First section content add
+
+            //Course select init and fetch
+            $(".course-select").select2();
+            $(".course-select").val(courseIds).trigger("change");
+            //Teacher select init and fetch
+            $(".teacher-select").select2();
+            $(".teacher-select").val(teacherIds).trigger("change");
+            $.ajax({
+                type: "GET",
+                url: "@Url.Action("GetTestByTestId", "Admin")",
+                data: {
+                    testId: testId
+                }, success: function (data) {
+                    if (data != "") {
+                        let result = JSON.parse(data);
+                        //Init change status button
+                        if (result[0].Status == 1) {
+                            $("#test-status").html("Đóng bài thi");
+                            $("#test-status").addClass("btn-danger");
+                        } else {
+                            $("#test-status").html("Mở bài thi");
+                            $("#test-status").addClass("btn-success");
+                        }
+                    }
+                }
+            })
+            init();
+        })
+
+        $(document).on("submit", "form", function (event) {
+            event.preventDefault();
+        })
+
+        $(document).on("click", "#test-status", function () {
+            $.ajax({
+                type: "POST",
+                url: "@Url.Action("UpdateTestStatus", "Admin")",
+                data: {
+                    testId: testId
+                }, success: function (data) {
+                    let result = JSON.parse(data);
+                    if (result.Status == 1) {
+                        $("#test-status").html("Đóng bài thi");
+                        $("#test-status").toggleClass('btn-danger btn-success');
+                        //Success alert here
+                    } else {
+                        $("#test-status").html("Mở bài thi");
+                        $("#test-status").toggleClass('btn-success btn-danger');
+                    }
+                }
+            })
+        })
+
+        //Save changes
+        $(".save-changes").on("click", function () {
+            var testName = $("#test-name").val();
+            var totalTime = 0;
+            var docIds = [];
+            var checkNull = false;
+            if (testQuestions.length > 0) {
+                for (let i = 0; i < testQuestions.length; i++) {
+                    //Save totalTime
+                    var currentTotalTime = $("#part-" + i + "-time").val();
+                    if (currentTotalTime == null || currentTotalTime == 0) {
+                        toastr.warning("Thời gian làm bài của phần " + (i + 1) + " không được bằng 0 !");
+                        checkNull = true;
+                    } else {
+                        testQuestions[i].totalTime = parseInt($("#part-" + i + "-time").val());
+                    }
+                    totalTime += testQuestions[i].totalTime;
+                    //Save partName
+                    var currentPartName = $("#part-" + i + "-name").val();
+                    if (currentPartName == "") {
+                        toastr.warning("Tên phần thi thứ " + (i + 1) + " không được để trống !");
+                        checkNull = true;
+                    }
+                    //Save courses
+                    var courses = $(".course-select").select2("val").toString();
+                    //Save teachers
+                    var teachers = $(".teacher-select").select2("val").toString();
+                    //Save document ids
+                    $(".content-media").each(function () {
+                        if ($(this).prop("tagName") != "A") {
+                            test = $(this).attr("src");
+                            docIds.push(parseInt($(this).attr("src").split("/")[3]));
+                        } else {
+                            docIds.push(parseInt($(this).attr("href").split("/")[3]));
+                        }
+                    });
+                    //Save sections
+                    if (testQuestions[i].questions.length > 0) {
+                        var totalPoint = 0;
+                        for (let j = 0; j < testQuestions[i].questions.length; j++) {
+                            //Save listenAgain value
+                            var laValue = $("#listen-again-" + i + "-" + j).val();
+                            if (laValue != -1) {
+                                testQuestions[i].questions[j].listenAgain = laValue.toString();
+                            } else {
+                                testQuestions[i].questions[j].listenAgain = undefined;
+                            }
+                            var element = $("#content-" + i + "-" + j);
+                            //Save content
+                            var content = element.summernote('code'); //Get content
+                            testQuestions[i].questions[j].content = content; //Set content
+                            if (testQuestions[i].questions[j].content == "") { //Check null content
+                                checkNull = true;
+                                toastr.warning(`Nội dung của bài tập ${i + 1}.${j + 1} không được để trống!`);
+                            }
+                            //Save questions
+                            if (testQuestions[i].questions[j].questionIds.length == 0) { //Check null question
+                                checkNull = true;
+                                toastr.warning(`Bài tập ${i + 1}.${j + 1} không có câu hỏi nào!`);
+                            }else{
+                                //Save point
+                                for(let k = 0; k < testQuestions[i].questions[j].questionIds.length; k++){
+                                    let questionId = testQuestions[i].questions[j].questionsData[k].id;
+                                    let questionPoint = $(`#question-${questionId}-${i}-${j}-point`).val();
+                                    if(questionPoint != "" && questionPoint != "0"){
+                                        console.log(testQuestions[i].questions[j].questionsData[k].point);
+                                        testQuestions[i].questions[j].questionsData[k].point = parseInt(questionPoint);
+                                        totalPoint += parseInt(questionPoint);
+                                    }else{
+                                        checkNull = true;
+                                        toastr.warning(`Điểm số của câu hỏi thứ ${k + 1} của phần ${i + 1} bài ${j + 1} không phù hợp!`);
+                                    }
+                                }
+                            }
+                        }
+                        //Save total point
+                        $("#part-" + i + "-total").val(totalPoint);
+                    } else {
+                        checkNull = true;
+                        toastr.warning(`Phần ${i + 1} không có bài tập nào !`);
+                    }
+                }
+            } else {
+                checkNull = true;
+                toastr.warning("Không có phần nào để lưu !");
+            }
+
+            if (testName == "") {
+                warningAlert("Cảnh báo", "Dữ liệu không được để trống !");
+                checkNull = true;
+            }
+
+            if (!checkNull) {
+                result = JSON.stringify(testQuestions).replaceAll('"', "'");
+                $("#test-time").val(totalTime);
+                //Ajax
+                $.ajax({
+                    url: "@Url.Action("UpdateTestData", "Admin")",
+                    type: "post",
+                    data: {
+                        testId: testId,
+                        testName: testName,
+                        time: totalTime,
+                        content: result,
+                        contentDoc: docIds.toString(),
+                        courseIds: courses,
+                        teacherIds: teachers
+                    }, success: function (data) {
+                        console.log(data);
+                        //Reset html
+                        $("h1").html(testName);
+                        $(".breadcrumb-testName").html(testName);
+                        //Alert
+                        toastr.success("Các thay đổi đã được lưu vào hệ thống!");
+                    }
+                })
+            }
+        })
+
+        //Remove part
+        $(document).on("click", ".remove-part", function () {
+            var part = $(this).attr("id").split("-")[2];
+            confirmAlert("Chắc chắn muốn xóa phần này ?", () => {
+                //Update questionIds
+                for(let i = 0; i < testQuestions[part].questions.length; i++){
+                    questionIds = questionIds.filter(item => !testQuestions[part].questions[i].questionIds.includes(item));
+                }
+                //Update testQuestions
+                testQuestions.splice(part, 1);
+                init();
+                //Alert
+                toastr.success(`Đã xóa phần ${parseInt(part) + 1} !`);
+            })
+        })
+
+        //Add section
+        $(document).on("click", ".add-section-btn", function () {
+            var part = parseInt($(this).attr("id").split("-")[2]);
+            renderSection(part, null, null);
+            toastr.success("Bài tập mới đã được thêm");
+        })
+
+        //Remove section
+        $(document).on("click", ".remove-section", function () {
+            var part = $(this).attr("id").split("-")[2];
+            var section = $(this).attr("id").split("-")[3];
+            confirmAlert("Chắc chắn muốn xóa bài tập này ?", () => {
+                $("#section-" + part + "-" + section).remove();
+                //Update testQuestions
+                testQuestions[part].questions.splice(section, 1);
+                //Update questionIds
+                questionIds = questionIds.filter(item => !testQuestions[part].questions[section].questionIds.includes(item));
+                //Render part
+                renameSectionIndex(part);
+                //Alert
+                toastr.success("Bài tập đã được xóa");
+            })
+        })
+
+        function initTextEditor(elementId, classType) {
+            $(elementId).summernote({
+                placeholder: "Nhập nội dung...",
+                height: 300,
+                lineHeight: "0.6",
+                toolbar: [
+                    ['style', ['fontname', 'fontsize']],
+                    ['font', ['bold', 'italic', 'underline', 'clear']],
+                    ['color', ['color']],
+                    ['para', ['ul', 'ol', 'paragraph', "height"]],
+                    ['table', ['table']],
+                    ['insert', ["file", "link", "question"]],
+                    ['view', ['fullscreen', 'codeview']]
+                ],
+                buttons: {
+                    question: addQuestionButton(elementId)
+                },
+                callbacks: {
+                    onFileUpload: function (files) {
+                        uploadDocCallBack(files[0], elementId, classType);
+                    }
+                },
+            });
+        }
+
+        function init() {
+            //Tabs
+            $("#test-tab-ul").empty();
+            $(".tab-content").empty();
+            for (let i = 0; i < testQuestions.length; i++) {
+                if (i == 0) { //Render first
+                    $("#test-tab-ul").append(`<li class="nav-item">
+                                        <a class="nav-link active" data-toggle="pill" href="#part-${i}-content" role="tab" aria-controls="custom-content-above-messages" aria-selected="true" id="part-title-${i}"><span>Phần: ${testQuestions[i].partName}</span><button type="button" class="close remove-part" id="remove-part-${i}" style="margin-left: 20px">×</button></a>
+                                    </li>`)
+                    $(".tab-content").append(`<div class="tab-pane fade active show" id="part-${i}-content" role="tabpanel" aria-labelledby="custom-content-above-messages-tab"></div>`);
+                } else {
+                    $("#test-tab-ul").append(`<li class="nav-item">
+                                        <a class="nav-link" data-toggle="pill" href="#part-${i}-content" role="tab" aria-controls="custom-content-above-messages" aria-selected="false" id="part-title-${i}"><span>Phần: ${testQuestions[i].partName}</span><button type="button" class="close remove-part" id="remove-part-${i}" style="margin-left: 20px">×</button></a>
+                                    </li>`)
+                    $(".tab-content").append(`<div class="tab-pane fade" id="part-${i}-content" role="tabpanel" aria-labelledby="custom-content-above-messages-tab"></div>`);
+                }
+            }
+            $("#test-tab-ul").prepend(`<li class="nav-item">
+                                        <a class="nav-link" onclick="newPart()"><i class="fa fa-plus"></i></a>
+                                    </li>`)
+            //Part and sections
+            for (let i = 0; i < testQuestions.length; i++) {
+                renderPart(i);
+            }
+        }
+
+        function renderPart(partIndex) {
+            var data = testQuestions[partIndex];
+            var html = `<div class="row">
+                                <form class="col-12">
+                                    <div class="form-group row">
+                                        <label class="col-sm-2 col-form-label">Tên phần thi:</label>
+                                        <div class="col-sm-3">
+                                            <input type="text" class="form-control part-name-input" id="part-${partIndex}-name" value="${data.partName == "" ? "" : data.partName}" />
+                                        </div>
+                                    </div>
+                                    <div class="form-group row">
+                                        <label class="col-sm-2 col-form-label">Thời gian làm bài:</label>
+                                        <div class="col-sm-1">
+                                            <input type="number" min="1" class="form-control" id="part-${partIndex}-time" value="${data.totalTime}">
+                                        </div>
+                                        <p style="margin: 6px;">phút</p>
+                                    </div>
+                                    <div class="form-group row">
+                                        <label class="col-sm-2 col-form-label">Tổng điểm:</label>
+                                        <div class="col-sm-1">
+                                            <input type="number" min="0" class="form-control" id="part-${partIndex}-total" value="${data.totalPoint}">
+                                        </div>
+                                        <p style="margin: 6px;">điểm</p>
+                                    </div>
+                                    <div class="form-group row">
+                                        <button type="button" class="btn btn-success add-section-btn" id="add-section-${partIndex}">Thêm bài mới</button>
+                                    </div>
+                                </form>
+                            </div>`;
+            $("#part-" + partIndex + "-content").html(html);
+            for (let i = 0; i < data.questions.length; i++) {
+                renderSection(partIndex, data.questions[i], i)
+            }
+            console.log("hello")
+        }
+
+        function renderSection(partDestination, data, index) {
+            var currentLength = testQuestions[partDestination].questions.length;
+            var content = "";
+            var questionsTr = "";
+            var listenAgain = -1;
+
+            if (index != null) {
+                currentLength = index;
+            }
+
+            if (data == null) { //Create blank section
+                data = {
+                    content: null,
+                    questionIds: [],
+                    questionsData: []
+                };
+                //Update testQuestions
+                testQuestions[partDestination].questions.push(data);
+                content = `<div class="row" id="section-${partDestination}-${currentLength}">
+                                <div class="col-12">
+                                    <div>
+                                        <h3 class="part-${partDestination}-section-name">Bài ${currentLength + 1}</h3>
+                                    </div>
+                                    <div>
+                                        <form>
+                                            <div class="form-group row">
+                                                <label class="col-sm-2 col-form-label">Số lần nghe lại:</label>
+                                                <div class="col-sm-1">
+                                                    <input type="number" min="-1" class="form-control" id="listen-again-${partDestination}-${currentLength}" value="${listenAgain}">
+                                                </div>
+                                                <p style="margin: 6px;">lần</p>
+                                            </div>
+                                        </form>
+                                    </div>
+                                    <div>
+                                        <div id="content-${partDestination}-${currentLength}">
+
+                                        </div>
+                                    </div>
+                                    <hr>
+                                    <div>
+                                        <table class="table table-hover" id="table-${partDestination}-${currentLength}">
+                                            <thead>
+                                                <tr>
+                                                    <th>Id</th>
+                                                    <th>Nội dung câu hỏi</th>
+                                                    <th>Loại câu hỏi</th>
+                                                    <th>Điểm số</th>
+                                                    <th>Thao tác</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                ${questionsTr}
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                    <br>
+                                    <div style="float: right">
+                                        <button type="button" class="btn btn-danger remove-section" id="remove-section-${partDestination}-${currentLength}">Xóa bài tập</button>
+                                    </div>
+                                </div>
+                            </div>
+                            <hr>`;
+                    $("#part-" + partDestination + "-content").append(content);
+                    //Init and paste content data
+                    initTextEditor(`#content-${partDestination}-${currentLength}`, "content-media");
+                    $(`#content-${partDestination}-${currentLength}`).summernote('code', data.content);
+                    //Init and paste question data
+                    sdtInit(`#table-${partDestination}-${currentLength}`);
+            }else{
+                if(checkValue(data.listenAgain)){
+                    listenAgain = data.listenAgain;
+                }
+                loadQuestionsData(testQuestions[partDestination].questions[index].questionIds.toString(), function(result){
+                    var totalPoint = 0;
+                    for(let i = 0; i < result.length; i++){
+                        questionIds.push(result[i].questionId);
+                        var point = testQuestions[partDestination].questions[index].questionsData[i].point;
+                        console.log(point);
+                        totalPoint += point;
+                        if(testQuestions[partDestination].questions[index].questionsData[i].type == "4" || testQuestions[partDestination].questions[index].questionsData[i].type == "5"){
+                            questionsTr += `<tr>
+                                                <td>${result[i].questionId}</td>
+                                                <td style="width:50%">${formatData(result[i].content)}</td>
+                                                <td>${formatQuestionType(parseInt(result[i].type))}</td>
+                                                <td style="width:10%"><input type="number" class="form-control" id="question-${result[i].questionId}-${partDestination}-${index}-point" min="0" max="1000" value="${point}"/></td>
+                                                <td style="width:5%"><button type="button" class="btn btn-danger remove-question" id="remove-${result[i].questionId}-${partDestination}-${index}">Gỡ</button></td>
+                                            </tr>`;
+                        }else{
+                            questionsTr += `<tr>
+                                                <td>${result[i].questionId}</td>
+                                                <td style="width:50%">${formatData(result[i].content)}</td>
+                                                <td>${formatQuestionType(parseInt(result[i].type))}</td>
+                                                <td style="width:10%"><input type="number" class="form-control" id="question-${result[i].questionId}-${partDestination}-${index}-point" min="1" max="1" value="${point}"/></td>
+                                                <td style="width:5%"><button type="button" class="btn btn-danger remove-question" id="remove-${result[i].questionId}-${partDestination}-${index}">Gỡ</button></td>
+                                            </tr>`;
+                        }
+                    }
+                    increaceInputValue("#part-" + partDestination + "-total", totalPoint);
+                    content = `<div class="row" id="section-${partDestination}-${currentLength}">
+                                <div class="col-12">
+                                    <div>
+                                        <h3 class="part-${partDestination}-section-name">Bài ${currentLength + 1}</h3>
+                                    </div>
+                                    <div>
+                                        <form>
+                                            <div class="form-group row">
+                                                <label class="col-sm-2 col-form-label">Số lần nghe lại:</label>
+                                                <div class="col-sm-1">
+                                                    <input type="number" min="-1" class="form-control" id="listen-again-${partDestination}-${currentLength}" value="${listenAgain}">
+                                                </div>
+                                                <p style="margin: 6px;">lần</p>
+                                            </div>
+                                        </form>
+                                    </div>
+                                    <div>
+                                        <div id="content-${partDestination}-${currentLength}">
+
+                                        </div>
+                                    </div>
+                                    <hr>
+                                    <div>
+                                        <table class="table table-hover" id="table-${partDestination}-${currentLength}">
+                                            <thead>
+                                                <tr>
+                                                    <th>Id</th>
+                                                    <th>Nội dung câu hỏi</th>
+                                                    <th>Loại câu hỏi</th>
+                                                    <th>Điểm số</th>
+                                                    <th>Thao tác</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                ${questionsTr}
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                    <br>
+                                    <div style="float: right">
+                                        <button type="button" class="btn btn-danger remove-section" id="remove-section-${partDestination}-${currentLength}">Xóa bài tập</button>
+                                    </div>
+                                </div>
+                            </div>
+                            <hr>`;
+                    $("#part-" + partDestination + "-content").append(content);
+                    //Init and paste content data
+                    initTextEditor(`#content-${partDestination}-${currentLength}`, "content-media");
+                    $(`#content-${partDestination}-${currentLength}`).summernote('code', data.content);
+                    //Init and paste question data
+                    sdtInit(`#table-${partDestination}-${currentLength}`);
+                });
+            }
+        }
+
+        //New part
+        function newPart() {
+            var currentLength = testQuestions.length;
+            var blankObject = {
+                partName: currentLength + 1,
+                totalPoint: 0,
+                totalTime: 0,
+                questions: [
+                    {
+                        content: null,
+                        questionIds: [],
+                        questionsData: []
+                    }
+                ]
+            };
+            testQuestions.push(blankObject);
+            $("#test-tab-ul").append(`<li class="nav-item">
+                                        <a class="nav-link" data-toggle="pill" href="#part-${currentLength}-content" role="tab" aria-controls="custom-content-above-messages" aria-selected="false" id="part-title-${currentLength}"><span>Phần: ${currentLength + 1}</span> <button type="button" class="close remove-part" id="remove-part-${currentLength}" style="margin-left: 20px">×</button></a>
+                                    </li>`);
+            $(".tab-content").append(`<div class="tab-pane fade" id="part-${currentLength}-content" role="tabpanel" aria-labelledby="custom-content-above-messages-tab">
+                                     </div>`);
+            renderPart(currentLength);
+            console.log("Thêm phần mới thành công");
+            console.log(testQuestions);
+        }
+
+        function renameSectionIndex(part){
+            $(".part-"+ part +"-section-name").each(function(index){
+                $(this).html("Bài " + (index + 1));
+            })
+        }
+
+        //Part name input on change
+        $(document).on("input", ".part-name-input", function() {
+            var index = $(this).attr("id").split("-")[1];
+            console.log(index);
+            $("#part-title-" + index + " span").html("Phần: " + $(this).val());
+            testQuestions[parseInt(index)].partName = $(this).val();
+        })
+
+        //Custom button
+        var addQuestionButton = function (context) {
+            var ui = $.summernote.ui;
+            var button = ui.button({
+                contents: 'Thêm câu hỏi',
+                tooltip: 'Add Question',
+                click: function () {
+                    currentSelectedContent = context;
+                    $("#modal-add-question").modal("show");
+                    //Clear data
+                    $('#table-add-question').DataTable().destroy();
+                    //Get all questions
+                    $.ajax({
+                        type: "get",
+                        url: "@Url.Action("GetQuestion", "Admin")",
+                        data: {
+                            All: true
+                        }, success: function (data) {
+                            var result = JSON.parse(data);
+                            console.log(result);
+                            $('#table-add-question').DataTable({
+                                scrollX: true,
+                                responsive: true,
+                                language: {
+                                    emptyTable: "Không có câu hỏi nào để hiển thị",
+                                    info: "Hiển thị _START_ đến _END_ trong _TOTAL_ câu hỏi",
+                                    lengthMenu: "Hiển thị _MENU_ câu hỏi",
+                                    search: "Tìm kiếm:",
+                                    paginate: {
+                                        "first": "First",
+                                        "last": "Last",
+                                        "next": ">>",
+                                        "previous": "<<"
+                                    }
+                                },
+                                columnDefs: [
+                                    { 'max-width': '45%', 'targets': 1 }
+                                ],
+                                data: result.questions,
+                                columns: [
+                                    { data: 'QuestionId' },
+                                    {
+                                        data: 'Content',
+                                        render: function (data, type, row) {
+                                            var div = document.createElement("div");
+                                            div.innerHTML = formatData(data);
+                                            return div.outerHTML;
+                                        }
+                                    },
+                                    {
+                                        data: 'Type',
+                                        render: function (data, type, row) {
+                                            return formatQuestionType(data);
+                                        }
+                                    },
+                                    {
+                                        data: 'Tag'
+                                    },
+                                    {
+                                        data: 'QuestionId',
+                                        render: function (data, type, row) {
+                                            return `<button class="btn btn-primary btn-sm select-question" onclick="selectQuestion(${data})">Chọn</button>`;
+                                        }
+                                    }
+                                ],
+                                "pageLength": 10
+                            });
+                            $('#table-add-question').css("overflow", "scroll");
+                            $('table').css("width", "100%");
+                            $(".dataTables_scrollHeadInner").css("width", "100%");
+                        }
+                    })
+                }
+            });
+            return button.render();   // return button as jquery object
+        }
+
+        //Questions
+        function loadQuestionsData(questionIds, callback){
+            $.ajax({
+                type: "get",
+                async: false,
+                url: "/Admin/GetQuestionsData",
+                data: {
+                    questionIds: questionIds
+                }, success: callback
+            })
+        }
+
+        function selectQuestion(questionId) {
+            var part = currentSelectedContent.split("-")[1];
+            var section = currentSelectedContent.split("-")[2];
+            if(questionIds.includes(parseInt(questionId))) { //Check if question existed in current content
+                warningAlert("Lỗi chọn câu hỏi", "Câu hỏi này đã có trong bài thi !");
+            } else {
+                getQuestionById(questionId, function(data){
+                    //Add question to questionIds
+                    questionIds.push(parseInt(questionId));
+                    testQuestions[part].questions[section].questionIds.push(parseInt(questionId));
+                    //Add question to questionsData
+                    const result = JSON.parse(data);
+                    var point = 1;
+                    var maxPoint = 1;
+                    var minPoint = 1;
+                    //Check type to render question point
+                    if(result.Type == "4" || result.Type == "5"){
+                        point = 0;
+                        maxPoint = 1000;
+                        minPoint = 0;
+                    }
+                    testQuestions[part].questions[section].questionsData.push({id: result.QuestionId, point: point, type: result.Type});
+                    $(`#table-${part}-${section}`).DataTable().row.add($(`<tr>
+                                                                <td>${result.QuestionId}</td>
+                                                                <td style="width:50%">${formatData(result.Content)}</td>
+                                                                <td>${formatQuestionType(parseInt(result.Type))}</td>
+                                                                <td style="width:10%"><input type="number" class="form-control" id="question-${result.QuestionId}-${part}-${section}-point" min="${minPoint}" max="${maxPoint}" value="${point}"/></td>
+                                                                <td style="width:5%"><button type="button" class="btn btn-danger remove-question" id="remove-${result.QuestionId}-${part}-${section}">Gỡ</button></td>
+                                                              </tr>`)).draw();
+                    toastr.success("Câu hỏi đã được thêm vào bài tập !");
+                    console.log(testQuestions[part].questions[section]);
+                })
+            }
+        }
+
+        //Remove question
+        $(document).on("click", ".remove-question", function () {
+            confirmAlert("Chắc chắn muốn gỡ câu hỏi này ?", () => {
+                const questionId = $(this).attr("id").split("-")[1];
+                const part = $(this).attr("id").split("-")[2];
+                const section = $(this).attr("id").split("-")[3];
+                console.log(section);
+                console.log(testQuestions[part].questions[section]);
+                //Update array
+                questionIds = questionIds.filter(item => item != questionId);
+                let newQuestionIds = new Array(...testQuestions[part].questions[section].questionIds);
+                newQuestionIds = newQuestionIds.filter(item => String(item) != questionId);
+                let newQuestionData = new Array(...testQuestions[part].questions[section].questionsData);
+                newQuestionData = newQuestionData.filter(item => String(item.id) != questionId);
+                testQuestions[part].questions[section].questionIds = newQuestionIds;
+                testQuestions[part].questions[section].questionsData = newQuestionData;
+                $(`#table-${part}-${section}`).DataTable().row($(this).parents("tr")).remove().draw();
+                //Alert
+                console.log(testQuestions[part].questions[section]);
+                toastr.success("Câu hỏi đã được gỡ khỏi bài tập !");
+            })
+        })
+    </script>
+} 

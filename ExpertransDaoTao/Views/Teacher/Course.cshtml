@@ -1,0 +1,74 @@
+﻿@model IEnumerable<ExpertransDaoTao.ViewModel.AdminCourseShow>
+@{
+    Layout = "_LayoutTeacher";
+    ViewData["Title"] = "Quản lý lớp học";
+}
+<!-- Content Header (Page header) -->
+<section class="content-header">
+    <div class="container-fluid">
+        <div class="row mb-2">
+            <div class="col-sm-6">
+                <h1>Danh sách lớp học</h1>
+            </div>
+            <div class="col-sm-6">
+                <ol class="breadcrumb float-sm-right">
+                    <li class="breadcrumb-item"><a href="/teacher">Trang chủ</a></li>
+                    <li class="breadcrumb-item active">Lớp học</li>
+                </ol>
+            </div>
+        </div>
+    </div><!-- /.container-fluid -->
+</section>
+<div>
+    <div class="card card-default">
+        <div class="card-header">
+        </div>
+        <!-- /.card-header -->
+        <div class="card-body course-list">
+            @foreach (var c in Model)
+            {
+                <div class="callout callout-success course-element" id="course-@c.CourseId">
+                    <div class="d-flex bd-highlight">
+                        <div class="p-2 flex-grow-1 bd-highlight">
+                            <h2>Lớp: @c.CourseName</h2>
+                        </div>
+                        <div class="p-2 bd-highlight">
+                            <button type="button" class="btn btn-info course-detail" id="detail-@c.CourseId">Chi tiết</button>
+                        </div>
+                    </div>
+                    <div class="justify-content-end">
+
+                    </div>
+                    <p>
+                        @c.CourseTitle
+                    </p>
+                    <div id="course-l2-@c.CourseId">
+                        @foreach (var c2 in c.Course2)
+                        {
+                            <div class='col-md-6'>
+                                <div class='card card-primary collapsed-card'>
+                                    <div class='card-header'>
+                                        <h3 class='card-title'>@c2.Name</h3>
+                                    </div>
+                                </div>
+                            </div>
+                        }
+
+                    </div>
+                </div>
+            }
+
+        </div>
+        <!-- /.card-body -->
+    </div>
+    <!-- /.card -->
+</div>
+
+@section Scripts {
+    <script>
+        $(document).on("click", ".course-detail", function () {
+            let id = $(this).attr("id").split("-")[1];
+            document.location.href = "/teacher/lop-hoc/" + id;
+        })
+    </script>
+}

@@ -1,0 +1,159 @@
+﻿@model IEnumerable<ExpertransDaoTao.Models.Document>
+@{
+    Layout = "_LayoutAdmin";
+    ViewData["Title"] = "Quản lý tài liệu";
+}
+<!-- Content Header (Page header) -->
+<section class="content-header">
+    <div class="container-fluid">
+        <div class="row mb-2">
+            <div class="col-sm-6">
+                <h1>Quản lý tài liệu</h1>
+            </div>
+            <div class="col-sm-6">
+                <ol class="breadcrumb float-sm-right">
+                    <li class="breadcrumb-item"><a href="/admin">Trang chủ</a></li>
+                    <li class="breadcrumb-item active">Tài liệu</li>
+                </ol>
+            </div>
+        </div>
+    </div><!-- /.container-fluid -->
+</section>
+<div class="row">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header">
+                <div class="card-title">
+                </div>
+            </div>
+            <!-- /.card-header -->
+            <div class="card-body">
+                <table class="table table-head-fixed">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Tên tài liệu</th>
+                            <th>Định dạng</th>
+                            <th>Ngày tạo</th>
+                            <th>Thao tác</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var obj in Model)
+                        {
+                        <tr>
+                            <td>@obj.DocId</td>
+                            @if (!String.IsNullOrEmpty(obj.Trace))
+                            {
+                                string[] traceDestination = obj.Trace.Split("-");
+                                string destination = "";
+                                if(traceDestination[0] == "course")
+                                {
+                                    destination = "/admin/bai-tap/" + traceDestination[2];
+                                }
+                                <td>
+                                    <a href="@destination">@obj.DocName</a>
+                                </td>
+                            }
+                            else
+                            {
+                                <td>@obj.DocName</td>
+                            }
+                            <td>@obj.Type</td>
+                            <td>@obj.CreatedDate</td>
+                            <td>
+                                <div>
+                                    <button type="button" class="btn btn-primary doc-detail" id="detail-@obj.DocId">Chi tiết</button>
+                                </div>
+                            </td>
+                        </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+            <!-- /.card-body -->
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="modal-xl-detail">
+    <div class="modal-dialog modal-xl">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h4 class="modal-title">Chi tiết tài liệu</h4>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body modal-body-doc-detail">
+            </div>
+            <div class="modal-footer justify-content-between">
+                <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+@section Scripts {
+    <script>
+        $(document).ready(function () {
+            //Static scroll bar
+            $("body").css("overflow", "scroll");
+            sdtInit("table", 6);
+            $('.custom-file-input').on('change', function () {
+                var fileName = $(this).val().split("\\").pop();
+                $(this).next('.custom-file-label').html(fileName);
+            })
+        })
+
+        $(document).on("click", ".doc-detail", function () {
+            let id = $(this).attr("id").split("-")[1];
+            $.ajax({
+                type: "GET",
+                url: "@Url.Action("GetDocumentById")",
+                data: {
+                    docId: id
+                }, success: function (data) {
+                    let result = JSON.parse(data);
+                    $(".modal-body-doc-detail").empty();
+                    console.log(result.DocId);
+                    $(".modal-body-doc-detail").append(renderDoc(result.Type, result.DocId));
+                    $("#modal-xl-detail").modal("show");
+                    $(".modal-title").html(result.DocName);
+                }
+            })
+        })
+
+        $('#modal-xl-detail').on('hidden.bs.modal', function (e) {
+            $('audio').each(function () {
+                this.pause(); // Stop playing
+                this.currentTime = 0; // Reset time
+            });
+            $('video').each(function () {
+                this.pause(); // Stop playing
+                this.currentTime = 0; // Reset time
+            });
+        })
+
+        function renderDoc(type, id) {
+            let r = "";
+            if (type.split("/")[0] == "video") {
+                r += "<div class='d-flex justify-content-center'>"
+                r += "<video class='col-12' src='/admin/streamfile/" + id + "' controls style='width: auto;max-width:1000px; max-height: 600px; height:auto;'>";
+                r += "</video>";
+                r += "</div>";
+            } else if (type.split("/")[0] == "image") {
+                r += "<div class='text-center'>";
+                r += "<img class='col-12' src='/admin/streamfile/" + id + "' style='width: auto;max-width:1000px; max-height: 800px; height:auto;'>";
+                r += "</div>";
+            } else if (type.split("/")[0] == "audio") {
+                r += "<div class='text-center'>";
+                r += "<audio src='/admin/streamfile/" + id + "' controls>";
+                r += "</div>";
+            } else {
+                document.location.href = "/admin/file/" + id;
+                r += "<h3>Tệp đã được tải xuống!</h3>";
+            }
+            return r;
+        }
+    </script>
+}

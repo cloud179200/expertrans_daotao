@@ -1,0 +1,900 @@
+﻿@model ExpertransDaoTao.ViewModel.Course3DetailViewModel
+@{
+    ViewData["Title"] = "Chi tiết bài tập";
+    Layout = "_LayoutAdmin";
+    string questions = Model.Questions;
+}
+<section class="content-header">
+    <div class="container-fluid">
+        <div class="row mb-2">
+            <div class="col-sm-6">
+                <h1 class="course-3-h1-name">Bài tập : @Model.Name</h1>
+            </div>
+            <div class="col-sm-6">
+                <ol class="breadcrumb float-sm-right">
+                    <li class="breadcrumb-item"><a href="/admin">Trang chủ</a></li>
+                    <li class="breadcrumb-item"><a href="/admin/course">Khóa học</a></li>
+                    <li class="breadcrumb-item active">@Model.Course2Name</li>
+                    <li class="breadcrumb-item active breadcrumb-course-3-name">@Model.Name</li>
+                </ol>
+            </div>
+        </div>
+    </div>
+</section>
+<div class="row">
+    <div class="col-12">
+        <!-- Custom Tabs -->
+        <div class="card">
+            <div class="card-header d-flex p-0">
+                <ul class="nav nav-pills ml-auto p-2" style="margin-top:7px;">
+                    <li class="nav-item" id="tab-1"><a class="nav-link active" href="#tab_1" data-toggle="tab">Thông tin chi tiết</a></li>
+                    <li class="nav-item" id="tab-2"><a class="nav-link" href="#tab_2" data-toggle="tab">Nội dung luyện tập</a></li>
+                    <li class="nav-item" id="tab-3"><a class="nav-link" href="#tab_3" data-toggle="tab">Bài tập về nhà</a></li>
+                    <li class="nav-item" id="tab-4"><a class="nav-link" href="#tab_4" data-toggle="tab">Tài liệu tham khảo</a></li>
+
+                </ul>
+            </div><!-- /.card-header -->
+            <div class="card-body">
+                <div class="tab-content">
+                    <div class="tab-pane active" id="tab_1">
+                        <div class="row">
+                            <div class="col-md-12">
+                                <div class="card card-primary">
+                                    <div class="card-header">
+                                        <h3 class="card-title">Thông tin chi tiết</h3>
+                                    </div>
+                                    <div class="card-body">
+                                        <div class="card card-info">
+                                            <form class="form-horizontal">
+                                                <div class="card-body">
+                                                    <div class="form-group row">
+                                                        <label class="col-sm-2 col-form-label">Bài tập</label>
+                                                        <div class="col-sm-10">
+                                                            <input type="text" class="form-control" id="course-3-name" value="@Model.Name">
+                                                        </div>
+                                                    </div>
+                                                    <div class="form-group row">
+                                                        <label class="col-sm-2 col-form-label">Mô tả</label>
+                                                        <div class="col-sm-10">
+                                                            <textarea class="form-control" rows="5" id="course-3-description">@Model.Description</textarea>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                <div class="card-footer">
+                                                    <button type="button" class="btn btn-info save-course-info">Lưu thay đổi</button>
+                                                </div>
+                                            </form>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="tab-pane" id="tab_2">
+                        <div class="card card-default">
+                            <div class="card-header">
+                                <h3 class="card-title page-count">Trang 1 / 2</h3>
+                            </div>
+                            <div class="card-body">
+                                <div>
+                                    <div class="btn-group">
+                                        <div class="d-flex mb-3 bd-highlight">
+                                            <div class="p-2 bd-highlight">
+                                                <button type="button" class="btn btn-success" id="new-page">
+                                                    + Thêm trang mới
+                                                </button>
+                                            </div>
+                                            <div class="ml-auto p-2 bd-highlight">
+                                                <button type="button" class="btn btn-danger remove-page">
+                                                    Xóa trang
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div>
+                                    <div class="row">
+                                        <div class="col-12">
+                                            <div class="card card-default">
+                                                <div class="card-header d-flex bd-highlight mb-3">
+                                                    <div class="p-2 bd-highlight">
+                                                        <h3 class="card-title">Nội dung</h3>
+                                                    </div>
+                                                </div>
+                                                <div class="card-body">
+                                                    <div id="course-3-content"></div>
+                                                </div>
+                                                <div class="card-footer">
+                                                    <button type="button" class="btn btn-info save-page-content" style="float: right">Lưu nội dung</button>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="row">
+                                        <div class="col-12">
+                                            <div class="card card-default">
+                                                <div class="card-header">
+                                                    <h3 class="card-title">Các câu hỏi</h3>
+                                                </div>
+                                                <div class="card-body">
+                                                    <table id="course-3-question" class="table table-bordered table-hover">
+                                                        <thead>
+                                                            <tr>
+                                                                <th>Id</th>
+                                                                <th>Nội Dung</th>
+                                                                <th>Loại câu hỏi</th>
+                                                                <th>Các thẻ</th>
+                                                                <th style="width:12%">Thao tác</th>
+                                                            </tr>
+                                                        </thead>
+                                                        <tbody>
+                                                        </tbody>
+                                                    </table>
+                                                </div>
+                                                <div class="card-footer">
+                                                    <div class="d-flex justify-content-center">
+                                                        <div class="dropright">
+                                                            <button type="button" class="btn btn-primary btn-lg btn-block add-question" id="existed-question">Thêm câu hỏi</button>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="card-footer clearfix">
+                                <div class="d-flex bd-highlight mb-3">
+                                    <div class="p-2 bd-highlight">
+                                        <button type="button" class="btn btn-info btn-lg" id="save-changes">Lưu thay đổi</button>
+                                    </div>
+                                    <div class="ml-auto p-2 bd-highlight">
+                                        <ul class="pagination">
+                                            <li class="page-item"><a class="page-link" style="cursor:pointer" onclick="renderPage(0)">1</a></li>
+                                        </ul>
+                                    </div>
+                                </div>
+                                <div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="tab-pane" id="tab_3">
+                        <div class="row">
+                            <div class="col-md-12">
+                                <div class="card card-primary">
+                                    <div class="card-header">
+                                        <h3 class="card-title">Bài tập về nhà</h3>
+                                    </div>
+                                    <div class="card-body">
+                                        <div class="row" style="margin: 20px">
+                                            <div class="btn-group">
+                                                <button type="button" class="btn btn-success" data-toggle="modal" data-target="#modal-hw-add">
+                                                    Thêm bài tập
+                                                </button>
+                                            </div>
+                                        </div>
+                                        <div>
+                                            <table class="table table-head-fixed homework-table">
+                                                <thead>
+                                                    <tr>
+                                                        <th>ID</th>
+                                                        <th>Tên bài tập</th>
+                                                        <th>Thao tác</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody>
+                                                    @foreach (var hw in Model.Homeworks)
+                                                    {
+                                                    <tr>
+                                                        <td>@hw.HomeworkId</td>
+                                                        <td>@hw.HomeworkName</td>
+                                                        <td>
+                                                            <button type="button" class="btn btn-info" onclick="location.href = 'homework/@hw.HomeworkId'">Chỉnh sửa</button>
+                                                            <button type="button" class="btn btn-danger hw-remove" id="remove-hw-@hw.HomeworkId">Xóa</button>
+                                                        </td>
+                                                    </tr>
+                                                    }
+                                                </tbody>
+                                            </table>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="tab-pane" id="tab_4">
+                        <div class="row">
+                            <div class="col-md-12">
+                                <div class="card card-primary">
+                                    <div class="card-header">
+                                        <h3 class="card-title">Tài liệu tham khảo</h3>
+                                    </div>
+                                    <div class="card-body">
+                                        <div class="row" style="margin: 20px">
+                                            <div class="btn-group">
+                                                <button type="button" class="btn btn-success" data-toggle="modal" data-target="#modal-doc-add">
+                                                    Thêm tài liệu
+                                                </button>
+                                            </div>
+                                        </div>
+                                        <div>
+                                            <table class="table table-head-fixed document-table">
+                                                <thead>
+                                                    <tr>
+                                                        <th>ID</th>
+                                                        <th>Tên tài liệu</th>
+                                                        <th>Dung lượng</th>
+                                                        <th>Thao tác</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody>
+                                                    @foreach (var doc in Model.Documents)
+                                                    {
+                                                        //Get file size and convert from bytes to kb and mb
+                                                        var fileSize = "";
+                                                        var filePath = "wwwroot/media/" + doc.Path;
+                                                        try
+                                                        {
+                                                            long length = new System.IO.FileInfo(filePath).Length;
+                                                            double fileSizeFromLength = (length / 1024) / 1024;
+                                                            if (fileSizeFromLength < 1)
+                                                            {
+                                                                fileSize = (length / 1024).ToString() + " KB";
+                                                            }
+                                                            else
+                                                            {
+                                                                fileSize = ((length / 1024) / 1024).ToString() + " MB";
+                                                            }
+                                                        }
+                                                        catch
+                                                        {
+                                                            fileSize = "Lỗi đọc file";
+                                                        }
+                                                        <tr>
+                                                            <td>@doc.DocId</td>
+                                                            <td>@doc.DocName</td>
+                                                            <td><span class="tag tag-success">@fileSize</span></td>
+                                                            <td>
+                                                                <div>
+                                                                    <button type="button" class="btn btn-info" onclick="fileOpen('@fileSize', @doc.DocId)">Tải xuống</button>
+                                                                    <button type="button" class="btn btn-danger doc-remove" id="remove-doc-@doc.DocId">Xóa</button>
+                                                                </div>
+                                                            </td>
+                                                        </tr>
+                                                    }
+                                                </tbody>
+                                            </table>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="modal-doc-add">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h4 class="modal-title">Thêm tài liệu học tập</h4>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body modal-body-add-doc">
+                <form>
+                    <div class="form-group">
+                        <label for="createAnswerFilename">Tệp đính kèm(bỏ trống mục này sẽ đưa tệp về tên mặc định "Tài Liệu + loại tệp")</label>
+                        <input type="text" class="form-control" id="l3-doc-name" placeholder="Tên nội dung đính kèm">
+                    </div>
+                    <div class="form-group">
+                        <label for="questionDoc">Chọn tệp đính kèm</label>
+                        <input type="file" class="form-control-file" id="l3-doc-file">
+                    </div>
+                </form>
+                <div class="progress d-none" id="progressUploadDoc">
+                </div>
+            </div>
+
+            <div class="modal-footer">
+                <button type="button" class="btn btn-primary doc-add-sbmit">Thêm</button>
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Đóng</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+@*Add question modal*@
+<div class="modal fade" id="modal-add-question" tabindex="-1" role="dialog" aria-labelledby="exampleModalCenterTitle" aria-hidden="true">
+    <div class="modal-dialog modal-xl modal-dialog-centered" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="modal-add-question-title">Các câu hỏi trong hệ thống</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <table id="table-add-question" class="table table-bordered table-hover" style="width: 100%">
+                    <thead>
+                        <tr style="width: 100%">
+                            <th>ID</th>
+                            <th>Nội dung</th>
+                            <th>Loại câu hỏi</th>
+                            <th>Thẻ</th>
+                            <th>Thao tác</th>
+                        </tr>
+                    </thead>
+                </table>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Đóng</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="modal-hw-add">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h4 class="modal-title">Thêm bài tập</h4>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div class="card card-info">
+                    <form class="form-horizontal">
+                        <div class="card-body">
+                            <div class="form-group row">
+                                <label class="col-sm-3 col-form-label">Bài tập</label>
+                                <div class="col-sm-8">
+                                    <input type="text" class="form-control" id="homework-name" autofocus>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="modal-footer justify-content-between">
+                            <button type="button" class="btn btn-default" data-dismiss="modal">Đóng</button>
+                            <button type="button" class="btn btn-info" id="add-homework">Tạo mới</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+@section Scripts{
+    <script>
+        //Init
+        const courseIdLevel3 = @Model.CourseId3;
+        var currentPage = 0;
+        var contentChange = false;
+        //Get content
+        var content = JSON.parse(@Json.Serialize(@Model.Content));
+        //Get questions
+        var questions = JSON.parse("@questions");
+        //Documents
+        var documents = (("@Model.DocumentsId").split(",")).filter((e) => e);
+        //Homeworks
+        var homeworks = (("@Model.HomeworkIds").split(",")).filter((e) => e);
+        //Document Ids
+        var documentId = []
+        for (let i = 0; i < content.length; i++) {
+            documentId.push([]);
+        }
+        $(document).ready(function () {
+            //Static scroll bar
+            $("body").css("overflow", "scroll");
+            //Init content edit and save button
+            $("#content-edit").css("display", "block");
+            $("#content-save").css("display", "none");
+            //Render first
+            initTextEditor("#course-3-content", "content-media");
+            renderPage(0);
+            contentChange = false;
+        })
+
+        $(document).on("click", ".save-course-info", function () {
+            if ($("#course-3-name").val() != "" && $("#course-3-description").val() != "") {
+                $.ajax({
+                    type: "post",
+                    url: "@Url.Action("UpdateCourseLevel3Info", "Admin")",
+                    data: {
+                        courseIdLevel3: courseIdLevel3,
+                        courseName: $("#course-3-name").val(),
+                        courseDescription: $("#course-3-description").val()
+                    }, success: function (data) {
+                        //Success alert
+                        toastr.success("Thông tin bài tập đã được thay đổi !");
+                    }
+                })
+            } else {
+                warningAlert("Cảnh báo", "Dữ liệu không được để trống !");
+            }
+        });
+
+        function initTextEditor(elementId, classType) {
+            $(elementId).summernote({
+                placeholder: "Nhập nội dung...",
+                height: 300,
+                lineHeight: "0.6",
+                toolbar: [
+                    ['style', ['fontname', 'fontsize']],
+                    ['font', ['bold', 'italic', 'underline', 'clear']],
+                    ['color', ['color']],
+                    ['para', ['ul', 'ol', 'paragraph', "height"]],
+                    ['table', ['table']],
+                    ['insert', ["file", "link", "question"]],
+                    ['view', ['fullscreen', 'codeview']]
+                ],
+                callbacks: {
+                    onKeyup: function (e) {
+                        contentChange = true;
+                    },
+                    onFileUpload: function (files) {
+                        uploadDocCallBack(files[0], elementId, classType);
+                        contentChange = true
+                    }
+                },
+            });
+        }
+
+        function renderPaginationItems() {
+            var li = "<li class='page-item disabled'><a class='page-link'>Trang: </a></li>";
+            for (let i = 0; i < content.length; i++) {
+                li += `<li class="page-item"><a class="page-link" style="cursor:pointer" onclick="renderPage(${i})">${i + 1}</a></li>`
+            }
+            //Clear data
+            $(".pagination").empty();
+            $(".pagination").html(li);
+        }
+
+        //Add page
+        $("#new-page").on("click", function () {
+            //Check last
+            var lastContent = content[content.length - 1][0];
+            var lastQuestions = questions[questions.length - 1];
+            console.log(lastContent);
+            console.log(lastQuestions.length);
+
+            if (lastContent != "" && lastQuestions.length > 0) {
+                content.push([]);
+                questions.push([]);
+                documentId.push([]);
+            } else {
+                warningAlert("Cảnh báo", "Hãy thêm nội dung và câu hỏi cho trang trước khi thêm trang mới !");
+            }
+            renderPage(content.length - 1);
+        })
+
+        //Remove page
+        $(".remove-page").on("click", function () {
+            confirmAlert("Chắc chắn muốn xóa trang này ?", () => {
+                if (content.length < 2) {
+                    warningAlert("Cảnh báo", "Bài luyện tập phải có ít nhất 01 trang !");
+                } else {
+                    questions.splice(currentPage, 1);
+                    content.splice(currentPage, 1);
+                    documentId.splice(currentPage, 1);
+                    renderPage(0);
+                    toastr.success("Trang đã được xóa !");
+                }
+            })
+        })
+
+        //Render page by page index
+        function renderPage(pageIndex) {
+            if (contentChange) {
+                warningAlert("Cảnh báo", "Lưu nội dung trước khi chuyển sang trang mới !");
+            } else {
+                //Reload
+                renderPaginationItems();
+                $(".remove-page").html(`Xóa trang ${pageIndex + 1}`);
+                //Change page count
+                $(".page-count").html(`Trang: ${pageIndex + 1} / ${content.length}`);
+                //Clear data
+                $("#course-3-content").summernote("code", "");
+                $('#course-3-question').DataTable().destroy();
+                counter = 0;
+                questionData.length = 0;
+                //Get data
+                var pageContent = content[pageIndex][0];
+                var pageQuestions = questions[pageIndex];
+                //Get questions data
+                getQuestions(pageQuestions);
+                $("#course-3-content").summernote('code', pageContent);
+                currentPage = pageIndex;
+            }
+        }
+
+        var counter = 0;
+        var questionData = [];
+        function getQuestions(questionArray) {
+            if (counter >= questionArray.length) {
+                console.log("All question loaded !");
+                $('#course-3-question').DataTable({
+                    language: {
+                        emptyTable: "Không có câu hỏi nào để hiển thị",
+                        info: "Hiển thị _START_ đến _END_ trong _TOTAL_ câu hỏi",
+                        lengthMenu: "Hiển thị _MENU_ câu hỏi",
+                        search: "Tìm kiếm:",
+                        paginate: {
+                            "first": "FirHomeworkIdst",
+                            "last": "Last",
+                            "next": ">>",
+                            "previous": "<<"
+                        }
+                    },
+                    data: questionData,
+                    columns: [
+                        { data: 'QuestionId' },
+                        {
+                            data: 'Content',
+                            render: function (data, type, row) {
+                                return data.length < 70 ? formatData(data) : '<p>' + formatData(data).substr(0, 70) + '...</p>';
+                            }
+                        },
+                        {
+                            data: 'Type',
+                            render: function (data, type, row) {
+                                return formatQuestionType(data);
+                            }
+                        },
+                        {
+                            data: 'Tag'
+                        },
+                        {
+                            data: 'QuestionId',
+                            render: function (data, type, row) {
+                                return `<button class="btn btn-danger remove-question" id="remove-question-${data}">Gỡ</button>`;
+                            }
+                        }
+                    ],
+                    "pageLength": 10
+                });
+                $('#course-3-question').css("width", "100%");
+            } else {
+                $.ajax({
+                    type: "GET",
+                    url: "@Url.Action("GetQuestionById", "Admin")",
+                    data: {
+                        questionId: questionArray[counter]
+                    }, success: function (data) {
+                        var result = JSON.parse(data);
+                        counter++;
+                        questionData.push(result);
+                        getQuestions(questionArray);
+                    }
+                })
+            }
+        }
+
+        function formatQuestionType(type) {
+            let result = "";
+            if (type == 1) {
+                result = "Câu hỏi nhiều câu trả lời";
+            } else if (type == 2) {
+                result = "Câu hỏi nối";
+            } else if (type == 3) {
+                result = "Câu hỏi điền từ";
+            } else if (type == 4) {
+                result = "Câu hỏi viết lại câu";
+            } else if (type == 5) {
+                result = "Câu hỏi tự luận";
+            } else if (type == 6) {
+                result = "Câu hỏi đúng / sai";
+            } else {
+                result = "Không xác định";
+            }
+            return result;
+        }
+
+        function formatData(data) {
+            let result = "";
+            result = data.replace(/<audio[^>]*>(.*?)audio>/g, "[âm thanh]");
+            result = result.replace(/<video[^>]*>(.*?)video>/g, "[video]");
+            result = result.replace(/<img[^>]*>/g, "[hình ảnh]");
+            result = result.replace(/<a[^>]*>(.*?)a>/g, "[tệp tin]");
+            result = result.replace(/\[(\S+)\]/g, "...............");
+            return result;
+        }
+
+        //Add question
+        $("#existed-question").on("click", function () {
+            $("#modal-add-question").modal("show");
+            //Clear data
+            $('#table-add-question').DataTable().destroy();
+            //Get all questions
+            $.ajax({
+                type: "get",
+                url: "@Url.Action("GetQuestion", "Admin")",
+                data: {
+                    All: true
+                }, success: function (data) {
+                    var result = JSON.parse(data);
+                    console.log(result);
+                    $('#table-add-question').DataTable({
+                        scrollX: true,
+                        responsive: true,
+                        language: {
+                            emptyTable: "Không có câu hỏi nào để hiển thị",
+                            info: "Hiển thị _START_ đến _END_ trong _TOTAL_ câu hỏi",
+                            lengthMenu: "Hiển thị _MENU_ câu hỏi",
+                            search: "Tìm kiếm:",
+                            paginate: {
+                                "first": "First",
+                                "last": "Last",
+                                "next": ">>",
+                                "previous": "<<"
+                            }
+                        },
+                        columnDefs: [
+                            { 'max-width': '45%', 'targets': 1 }
+                        ],
+                        data: result.questions,
+                        columns: [
+                            { data: 'QuestionId' },
+                            {
+                                data: 'Content',
+                                render: function (data, type, row) {
+                                    var div = document.createElement("div");
+                                    div.innerHTML = formatData(data);
+                                    return div.outerHTML;
+                                }
+                            },
+                            {
+                                data: 'Type',
+                                render: function (data, type, row) {
+                                    return formatQuestionType(data);
+                                }
+                            },
+                            {
+                                data: 'Tag'
+                            },
+                            {
+                                data: 'QuestionId',
+                                render: function (data, type, row) {
+                                    return `<button class="btn btn-primary btn-sm select-question" onclick="selectQuestion(${data})">Chọn</button>`;
+                                }
+                            }
+                        ],
+                        "pageLength": 10
+                    });
+                    $('#table-add-question').css("overflow", "scroll");
+                    $('table').css("width", "100%");
+                    $(".dataTables_scrollHeadInner").css("width", "100%");
+                }
+            })
+        })
+
+        function selectQuestion(questionId) {
+            if (questions[currentPage].includes(questionId)) { //Check if question existed in current content
+                warningAlert("Lỗi thêm câu hỏi", "Câu hỏi này đã có trong trang !");
+            } else {
+                $.ajax({
+                    type: "GET",
+                    url: "@Url.Action("GetQuestionById", "Admin")",
+                    data: {
+                        questionId: questionId
+                    }, success: function (data) {
+                        var result = JSON.parse(data);
+                        console.log(result.Content)
+                        questions[currentPage].push(parseInt(questionId));
+                        renderPage(currentPage);
+                        toastr.success("Câu hỏi đã được thêm !");
+                    }
+                })
+            }
+        }
+
+        //Remove question
+        $('#course-3-question tbody').on("click", ".remove-question", function () {
+            var questionId = parseInt($(this).attr("id").split("-")[2]);
+            const index = questions[currentPage].indexOf(questionId);
+            if (index > -1) {
+                questions[currentPage].splice(index, 1);
+                $('#course-3-question').DataTable().row($(this).parents("tr")).remove().draw();
+
+                toastr.success("Câu hỏi đã được xóa khỏi trang " + (currentPage + 1));
+            }
+        })
+
+        //Save content
+        $(".save-page-content").on("click", function () {
+            content[currentPage][0] = $("#course-3-content").summernote("code");
+            //Save document ids
+            $(".content-media").each(function () {
+                if ($(this).prop("tagName") != "A") {
+                    test = $(this).attr("src");
+                    documentId[currentPage].push(parseInt($(this).attr("src").split("/")[3]));
+                } else {
+                    documentId[currentPage].push(parseInt($(this).attr("href").split("/")[3]));
+                }
+            });
+            contentChange = false;
+            toastr.success("Nội dung đã được lưu !");
+        })
+
+        //Save changes
+        $("#save-changes").on("click", function () {
+            if (contentChange) {
+                warningAlert("Cảnh báo", "Lưu nội dung của trang trước khi lưu bài tập !");
+            } else {
+                var checkNull = false;
+                //Check null content
+                for (let i = 0; i < content.length; i++) {
+                    var currentContent = content[i][0];
+                    console.log(currentContent);
+                    if (currentContent == undefined || currentContent.toString() == "") {
+                        checkNull = true;
+                        warningAlert("Cảnh báo", `Nội dung của trang ${i + 1} không được để trống!`);
+                    }
+                }
+                //Check null questions
+                for (let i = 0; i < questions.length; i++) {
+                    console.log(i);
+                    if (questions[i].length < 1) {
+                        warningAlert("Lưu không thành công", `Trang ${i + 1} không có câu hỏi nào !`);
+                        checkNull = true;
+                    }
+                }
+                //Get document ids
+                var allDoc = [];
+                for (let i = 0; i < documentId.length; i++) {
+                    for (let j = 0; j < documentId[i].length; j++) {
+                        allDoc.push(documentId[i][j]);
+                    }
+                }
+                if (!checkNull) {
+                    console.log(courseIdLevel3);
+                    console.log(content.toString());
+                    console.log(allDoc.toString());
+                    console.log(questions.toString());
+                    $.ajax({
+                        type: "POST",
+                        url: "@Url.Action("UpdateCourse3", "Admin")",
+                        data: {
+                            courseIdLevel3: courseIdLevel3,
+                            content: JSON.stringify(content),
+                            contentDoc: allDoc.toString(),
+                            questions: JSON.stringify(questions)
+                        }, success: function (data) {
+                            toastr.success("Dữ liệu đã được lưu vào hệ thống !");
+                        }
+                    })
+                }
+            }
+        })
+
+        //Tài liệu tham khảo
+        sdtInit(".document-table");
+
+        //Thêm tài liệu tham khảo
+        $(document).on("click", ".doc-add-sbmit", function () {
+            const file = document.getElementById("l3-doc-file").files[0];
+            const fileSize = parseInt(file.size / (1024 * 1024)) + " MB";
+            if (file !== undefined) {
+                const fileData = new FormData();
+                fileData.append(file.name, file);
+                $.ajax({
+                    url: '/Admin/UploadDoc?Filename=' + document.getElementById("l3-doc-name").value,
+                    type: "POST",
+                    contentType: false,
+                    processData: false,
+                    data: fileData,
+                    success: function (data) {
+                        let result = JSON.parse(data);
+                        console.log(result);
+                        let tr = `<td>
+                                        <div>
+                                            <button type="button" class="btn btn-info" onclick="fileOpen(${file.size}, ${result.DocId})">Tải xuống</button>
+                                            <button type="button" class="btn btn-block bg-gradient-danger btn-sm doc-remove" id="remove-doc-${result.DocId}">Xóa</button>
+                                        </div>
+                                    </td>`
+                        $('.document-table').DataTable().row.add([result.DocId, result.DocName, fileSize, tr]).draw(false);
+                        documents.push(result.DocId.toString());
+                        updateDocument();
+                    }, xhr: function () {
+                        let xhr = new window.XMLHttpRequest();
+                        xhr.upload.addEventListener("progress", function (evt) {
+                            if (evt.lengthComputable) {
+                                let percentComplete = Math.round((evt.loaded / evt.total) * 100);
+                                if (percentComplete < 95) {
+                                    //updateProgressById("progressUploadDoc", percentComplete);
+                                    console.log(percentComplete);
+                                }
+                            }
+                        }, false);
+                        return xhr;
+                    }
+                });
+            } else {
+                warningAlert("Cảnh báo", "Vui lòng chọn tài liệu!");
+            }
+        })
+
+        $(document).on("click", ".doc-remove", function () {
+            const id = $(this).attr("id").split("-")[2];
+            confirmAlert("Chắc chắn muốn xóa tài liệu này ?", () => {
+                const index = documents.indexOf(id);
+                if (index != -1) {
+                    documents.splice(index, 1);
+                }
+                updateDocument();
+                $('.document-table').DataTable().row($(this).parents("tr")).remove().draw();
+            })
+        })
+
+        function fileOpen(fileStatus, fileId) {
+            if (parseInt(fileStatus)) {
+                window.location.href = "streamfile/" + fileId;
+            } else {
+                errorAlert("Lỗi đọc file, không thể mở file này!");
+            }
+        }
+
+        function updateDocument() {
+            $.ajax({
+                type: "POST",
+                url: "@Url.Action("UpdateCourseLevel3Doc", "Admin")",
+                data: {
+                    courseId3: courseIdLevel3,
+                    newDocs: documents.toString()
+                }, success: function (data) {
+                    $("#modal-doc-add").modal("hide");
+                    //Alert message
+                    toastr.success("Danh sách tài liệu đã được cập nhật!");
+                }
+            })
+        }
+
+        //Bài tập về nhà
+        sdtInit(".homework-table");
+        //Thêm bài tập
+        $(document).on("click", "#add-homework", () => {
+            $.ajax({
+                type: "post",
+                url: "@Url.Action("AddHomework", "Admin")",
+                data: {
+                    homeworkName: $("#homework-name").val(),
+                    courseId3: courseIdLevel3
+                }, success: function (data) {
+                    document.location.href = "homework/" + data.homeworkId;
+                }
+            })
+        })
+        //Xóa bài tập
+        $(document).on("click", ".hw-remove", function () {
+            const id = $(this).attr("id").split("-")[2];
+            confirmAlert("Chắc chắn muốn xóa bài tập này ?", () => {
+                const index = homeworks.indexOf(id);
+                if (index != -1) {
+                    homeworks.splice(index, 1);
+                }
+                console.log(homeworks.toString());
+                $.ajax({
+                    type: "POST",
+                    url: "@Url.Action("RemoveHomework", "Admin")",
+                    data: {
+                        courseId3: courseIdLevel3,
+                        homeworkId: parseInt(id),
+                        hwStr: homeworks.toString()
+                    }, success: function (data) {
+                        //Alert message
+                        toastr.success("Danh sách bài tập đã được cập nhật!");
+                    }
+                })
+                $('.homework-table').DataTable().row($(this).parents("tr")).remove().draw();
+            })
+        })
+    </script>
+
+}

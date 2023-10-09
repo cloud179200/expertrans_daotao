@@ -1,0 +1,114 @@
+﻿@model ExpertransDaoTao.ViewModel.HistoryDetailViewModel
+@using System.Security.Claims;
+@using Newtonsoft.Json;
+@{
+    Layout = "_LayoutAdmin";
+    ViewData["Title"] = "Chi tiết bài thi";
+    string idHistory = Model.HistoryId.ToString();
+    List<Question> questions = new List<Question>();
+    List<QuestionResult> questionResult = new List<QuestionResult>();
+    int totalQuestion = 0;
+    if (!string.IsNullOrEmpty(idHistory) && int.Parse(idHistory) != 0)
+    {
+        questionResult = JsonConvert.DeserializeObject<List<QuestionResult>>(Model.StudentResult);
+        totalQuestion = questionResult.Count;
+    }
+}
+<link rel="stylesheet" href="~/css/coursestudent.css">
+<section class="content-header">
+    <div class="container-fluid">
+        <div class="row mb-2">
+            <div class="col-sm-6">
+                <h1>
+                    Chi tiết bài thi
+                </h1>
+            </div>
+            <div class="col-sm-6">
+                <ol class="breadcrumb float-sm-right">
+                    <li class="breadcrumb-item">Lịch sử thi</li>
+                    <li class="breadcrumb-item active">Chi tiết bài thi</li>
+                </ol>
+            </div>
+        </div>
+    </div><!-- /.container-fluid -->
+</section>
+<section class="content">
+    <div class="card card-primary card-outline">
+        <div class="card-header row">
+            <a class="col-12 col-md-3 col-lg-3 order-2 order-md-1 link" href="/Admin/TestHistory"><i class="fas fa-arrow-left"></i></a>
+        </div>
+        <div class="card-body">
+            <strong>Học viên: </strong><span>@Model.StudentName</span>
+            <hr>
+            <strong>Bài thi: </strong><span>@Model.TestName</span>
+            <hr>
+            <strong>Thời Gian Bắt Đầu: </strong><span>@Model.StartDate</span>
+            <hr>
+            @if (Model.EndDate == null)
+            {
+                <strong>Thời Gian Nộp Bài: </strong><span>Chưa nộp bài</span>
+            }
+            else
+            {
+                <strong>Thời Gian Nộp Bài: </strong><span> @Model.EndDate</span>
+            }
+            <hr>>
+            <strong>Điểm số: </strong>
+            <div class="d-flex mb-3">
+                <div class="p-2">
+                    <input class="form-control col-6 total-point" type="number"  value="@Model.Total"/>
+                </div>
+                <div class="p-2">
+                    <button type="button" class="btn btn-primary change-point">Lưu điểm số</button>
+                </div>
+            </div>
+            <hr>
+            <strong>Chi tiết bài làm</strong>
+
+            <div class="row p-2 m-4" id="detailHistory">
+                @if (!string.IsNullOrEmpty(Model.StudentResult))
+                {
+                    var listResult = JsonConvert.DeserializeObject<List<JsonResultModel>>(Model.StudentResult);
+                    foreach (JsonResultModel jr in listResult)
+                    {
+                        @Html.Raw(System.Net.WebUtility.HtmlDecode(jr.HTMLHistory))
+                    }
+                }
+                else
+                {
+                    <h3 class="col-12 text-center">Không có lịch sử chi tiết để hiển thị</h3>
+                }
+            </div>
+            <hr>
+        </div>
+        <!-- /.card -->
+    </div>
+</section>
+
+@section Scripts {
+    <script>
+        var historyId = "@Model.HistoryId";
+        document.getElementById("detailHistory").querySelectorAll("*").forEach(elm => {
+            elm.removeAttribute("id");
+        });
+
+        $(document).on("click", ".change-point", function () {
+            var total = $(".total-point").val();
+            if (total != null) {
+                $.ajax({
+                    type: "post",
+                    url: "UpdateTestHistoryPoint",
+                    data: {
+                        historyId: historyId,
+                        totalPoint: parseInt(total)
+                    }, success: function (data) {
+                        toastr.success("Điểm số mới đã được lưu vào hệ thống !");
+                    }
+                })
+            } else {
+                toastr.warning("Dữ liệu điểm số không được để trống !");
+            }
+            
+        })
+    </script>
+}

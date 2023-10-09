@@ -1,0 +1,194 @@
+﻿@model IEnumerable<ExpertransDaoTao.ViewModel.AdminCourseShow>
+@{
+    Layout = "_LayoutAdmin";
+    ViewData["Title"] = "Quản lý lớp học";
+}
+<!-- Content Header (Page header) -->
+<section class="content-header">
+    <div class="container-fluid">
+        <div class="row mb-2">
+            <div class="col-sm-6">
+                <h1>Danh sách lớp học</h1>
+            </div>
+            <div class="col-sm-6">
+                <ol class="breadcrumb float-sm-right">
+                    <li class="breadcrumb-item"><a href="/admin">Trang chủ</a></li>
+                    <li class="breadcrumb-item active">Lớp học</li>
+                </ol>
+            </div>
+        </div>
+    </div><!-- /.container-fluid -->
+</section>
+<div>
+    <div class="card card-default">
+        <div class="card-header">
+            <h3 class="card-title">
+                <button type="button" class="btn btn-success course-add">
+                    + Thêm lớp học
+                </button>
+            </h3>
+        </div>
+        <!-- /.card-header -->
+        <div class="card-body course-list">
+            @foreach (var c in Model)
+            {
+                <div class="callout callout-success course-element" id="course-@c.CourseId">
+                    <div class="d-flex bd-highlight">
+                        <div class="p-2 flex-grow-1 bd-highlight">
+                            <h2>Lớp: @c.CourseName</h2>
+                        </div>
+                        <div class="p-2 bd-highlight">
+                            <button type="button" class="btn btn-info course-detail" id="detail-@c.CourseId">Chi tiết</button>
+                        </div>
+                        <div class="p-2 bd-highlight">
+                            <button type="button" class="btn btn-danger course-remove" id="remove-course-@c.CourseId">Xóa</button>
+                        </div>
+                    </div>
+                    <div id="course-l2-@c.CourseId">
+                        @foreach (var c2 in c.Course2)
+                        {
+                            <div class='col-md-6'>
+                                <div class='card card-primary collapsed-card'>
+                                    <div class='card-header'>
+                                        <h3 class='card-title'>@c2.Name</h3>
+                                    </div>
+                                </div>
+                            </div>
+                        }
+
+                    </div>
+                </div>
+            }
+
+        </div>
+        <!-- /.card-body -->
+    </div>
+    <!-- /.card -->
+</div>
+
+<div class="modal fade" id="modal-lg-add">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h4 class="modal-title">Thêm lớp học mới</h4>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div class="card card-info">
+                    <form class="form-horizontal">
+                        <div class="card-body">
+                            <div class="form-group row">
+                                <label for="inputEmail3" class="col-sm-2 col-form-label">Lớp học</label>
+                                <div class="col-sm-10">
+                                    <input type="text" class="form-control" id="course-name" autofocus>
+                                </div>
+                            </div>
+                            <div class="form-group row">
+                                <label for="inputEmail3" class="col-sm-2 col-form-label">Mô tả</label>
+                                <div class="col-sm-10">
+                                    <textarea class="form-control" rows="7" id="course-description"></textarea>
+                                </div>
+                            </div>
+                            <div class="form-group row">
+                                <label for="inputEmail3" class="col-sm-2 col-form-label">Các thẻ</label>
+                                <div class="col-sm-10">
+                                    <select class="tag-select" multiple="multiple"></select>
+                                    <small class="text-danger">*Gợi ý: Bạn có thể thêm thẻ mới bằng cách nhập tên vào ô phía trên sau đó nhấn "Enter"</small>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="modal-footer justify-content-between">
+                            <button type="button" class="btn btn-default" data-dismiss="modal">Đóng</button>
+                            <button type="button" class="btn btn-info course-sbmit-add">Thêm mới</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        $(document).ready(function () {
+            //select 2 tag
+            $(".tag-select").select2({
+                tags: true
+            });
+            var allCourseId = [];
+            $(".course-element").each(function () {
+                allCourseId.push($(this).attr("id"));
+            })
+            $(".course-add").on('click', function () {
+                $("#modal-lg-add").modal("show");
+            })
+            $(".course-sbmit-add").on("click", function () {
+                if ($("#course-name").val() != "") {
+                    var tags = [];
+                    for (let i = 0; i < $(".tag-select").select2("data").length; i++) {
+                        tags.push($(".tag-select").select2("data")[i].text);
+                    }
+                    $.ajax({
+                        type: "POST",
+                        url: "@Url.Action("AddCourse")",
+                        data: {
+                            courseName: $("#course-name").val(),
+                            courseDescription: $("#course-description").val(),
+                            courseTag: tags.toString()
+                        }, success: function (data) {
+                            console.log(data)
+                            let result = JSON.parse(data);
+                            $(".course-list").prepend(renderNewCourse(result.CourseId, result.CourseName));
+                            $("#modal-lg-add").modal("hide");
+                            toastr.success("Lớp học mới đã được thêm !");
+                        }
+                    })
+                } else {
+                    toastr.warning("Dữ liệu không được để trống!");
+                }
+
+            })
+        })
+        $(document).on("click", ".course-detail", function () {
+            let id = $(this).attr("id").split("-")[1];
+            document.location.href = "/admin/lop-hoc/" + id;
+        })
+        $(document).on("click", ".course-remove", function () {
+            if (confirm("Bạn có chắc chắn muốn xóa lớp học này ?")) {
+                let id = $(this).attr("id").split("-")[2];
+                $.ajax({
+                    type: "POST",
+                    url: "@Url.Action("RemoveCourse")",
+                    data: {
+                        courseId: id
+                    }, success: function (data) {
+                        let result = JSON.parse(data);
+                        $("#course-" + result.CourseId).remove();
+                        toastr.success("Lớp "+result.CourseName+" đã được xóa khỏi hệ thống!")
+                    }
+                })
+            }
+        })
+        function renderNewCourse(courseId, courseName) {
+            let div = "<div class='callout callout-success course-element' id='course-"+courseId+"'>";
+            div += "<div class='d-flex bd-highlight'>";
+            div += "<div class='p-2 flex-grow-1 bd-highlight'>";
+            div += "<h2>Lớp: "+courseName+"</h2>";
+            div += "</div>";
+            div += "<div class='p-2 bd-highlight'>";
+            div += "<button type='button' class='btn btn-info course-detail' id='detail-"+courseId+"'>Chi tiết</button>";
+            div += "</div>";
+            div += "<div class='p-2 bd-highlight'>";
+            div += "<button type='button' class='btn btn-danger course-remove' id='remove-course-"+courseId+"'>Xóa</button>";
+            div += "</div>";
+            div += "</div>";
+            div += "<div id='course-l2-"+courseId+"'>";
+            div += "</div>";
+            div += "</div>";
+            return div;
+        }
+    </script>
+}

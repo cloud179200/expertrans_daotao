@@ -1,0 +1,38 @@
+﻿@model ExpertransDaoTao.ViewModel.CourseViewModel
+@using System.Security.Claims
+
+@foreach (var course in Model.Courses)
+{
+    if (!string.IsNullOrEmpty(course.StudentIds))
+    {
+        List<string> listStudent = course.StudentIds.Split(",").ToList();
+        if (listStudent.IndexOf(User.FindFirst(ClaimTypes.Authentication).Value) != -1)
+        {
+            <li class="nav-item has-treeview ml-3">
+                <a href="#" class="nav-link">
+                    <i class="nav-icon fas fa-book"></i>
+                    <p>
+                        @course.CourseName - @course.CourseDescription
+                        <i class="right fas fa-angle-left"></i>
+                    </p>
+                </a>
+                <ul class="nav nav-treeview">
+                    @foreach (var courseLvl2 in Model.CoursesLevel2)
+                    {
+                        if (courseLvl2.CourseId == course.CourseId)
+                        {
+                            <li class="nav-item">
+                                <a href="/Student/Course/@course.CourseId/@courseLvl2.CourseId2" class="nav-link">
+                                    <i class="far fa-circle nav-icon"></i>
+                                    <p>@courseLvl2.CourseId2 . @courseLvl2.Name</p>
+                                </a>
+                            </li>
+                        }
+
+                    }
+                </ul>
+            </li>
+        }
+    }
+
+}

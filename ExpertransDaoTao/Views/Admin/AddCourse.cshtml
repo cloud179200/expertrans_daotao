@@ -1,0 +1,539 @@
+﻿@{
+    Layout = "_LayoutAdmin";
+    ViewData["Title"] = "Thêm khóa học"; ;
+    var step = ViewData["step"] as int?;
+    var courseId = ViewData["courseId"] as int?;
+
+}
+@if (courseId != 0 && step != 0)
+{
+    <section class="content-header">
+        <div class="container-fluid">
+            <div class="row mb-2">
+                <div class="col-sm-6">
+                    <h1>Thêm lộ trình và nhóm bài tập cho khóa học</h1>
+                </div>
+                <div class="col-sm-6">
+                    <ol class="breadcrumb float-sm-right">
+                        <li class="breadcrumb-item"><a href="/admin">Home</a></li>
+                        <li class="breadcrumb-item"><a href="/admin/course">Khóa học</a></li>
+                        <li class="breadcrumb-item active">Thêm khóa học</li>
+                    </ol>
+                </div>
+            </div>
+        </div><!-- /.container-fluid -->
+    </section>
+    <div class="container-fluid">
+        <div class="row">
+            <div class="col-md-6">
+                <div class="card card-primary">
+                    <div class="card-header">
+                        <h3 class="card-title">Khóa học</h3>
+                    </div>
+                    <form asp-action="AddCourse" asp-controller="admin" method="post" role="form">
+                        <div class="card-body">
+                            <div class="form-group">
+                                <label for="exampleInputEmail1">Tên khóa học</label>
+                                <input type="text" class="form-control" id="course-name" name="courseName" disabled>
+                            </div>
+                            <div class="form-group">
+                                <label for="exampleInputPassword1">Tiêu đề khóa học</label>
+                                <input type="text" class="form-control" id="course-title" name="courseTitle" disabled>
+                            </div>
+                            <div class="form-group">
+                                <label>Mô tả</label>
+                                <textarea class="form-control" rows="10" id="course-description" name="courseDescription" disabled></textarea>
+                            </div>
+                        </div>
+                        <div class="card-footer">
+                        </div>
+                    </form>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="card card-warning">
+                    <div class="card-header">
+                        <h3 class="card-title">Thêm lộ trình học và nhóm bài tập</h3>
+                    </div>
+                    <div class="card-body" id="course-l2">
+                        <div style="margin: 20px">
+                            <div class="btn-group">
+                                <button type="button" class="btn btn-info dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                    Thêm lộ trình học
+                                </button>
+                                <div class="dropdown-menu">
+                                    <a class="dropdown-item" id="course-level2-exist" style="cursor:pointer">Lộ trình học có sẵn</a>
+                                    <div class="dropdown-divider"></div>
+                                    <a class="dropdown-item" id="course-level2-add" style="cursor:pointer;">Lộ trình học mới</a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="card-footer">
+                        <button type="submit" class="btn btn-primary">Xác nhận</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+}
+else
+{
+    <section class="content-header">
+        <div class="container-fluid">
+            <div class="row mb-2">
+                <div class="col-sm-6">
+                    <h1>Thêm khóa học mới</h1>
+                </div>
+                <div class="col-sm-6">
+                    <ol class="breadcrumb float-sm-right">
+                        <li class="breadcrumb-item"><a href="/admin">Home</a></li>
+                        <li class="breadcrumb-item"><a href="/admin/course">Khóa học</a></li>
+                        <li class="breadcrumb-item active">Thêm khóa học</li>
+                    </ol>
+                </div>
+            </div>
+        </div><!-- /.container-fluid -->
+    </section>
+    <div class="container-fluid">
+        <div class="row">
+            <div class="col-md-12">
+                <div class="card card-primary">
+                    <div class="card-header">
+                        <h3 class="card-title">Khóa học</h3>
+                    </div>
+                    <form asp-action="AddCourse" asp-controller="admin" method="post" role="form">
+                        <div class="card-body">
+                            <div class="form-group">
+                                <label for="exampleInputEmail1">Tên khóa học</label>
+                                <input type="text" class="form-control" id="course-name" name="courseName">
+                            </div>
+                            <div class="form-group">
+                                <label for="exampleInputPassword1">Tiêu đề khóa học</label>
+                                <input type="text" class="form-control" id="course-title" name="courseTitle">
+                            </div>
+                            <div class="form-group">
+                                <label>Mô tả</label>
+                                <textarea class="form-control" rows="10" id="course-description" name="courseDescription"></textarea>
+                            </div>
+                        </div>
+                        <div class="card-footer">
+                            <button type="submit" class="btn btn-primary">Thêm</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+}
+<!-- Content Header (Page header) -->
+@*Modal 1*@
+<div class="modal fade" id="modal-lg-add">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h4 class="modal-title">Large Modal</h4>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div class="card card-info">
+                    <form class="form-horizontal">
+                        <div class="card-body">
+                            <div class="form-group row">
+                                <label for="inputEmail3" class="col-sm-2 col-form-label">Tên lộ trình</label>
+                                <div class="col-sm-10">
+                                    <input type="text" class="form-control" id="course-name-2" autofocus>
+                                </div>
+                            </div>
+                            <div class="form-group row">
+                                <label for="inputEmail3" class="col-sm-2 col-form-label">Tiêu đề</label>
+                                <div class="col-sm-10">
+                                    <input type="text" class="form-control" id="course-title-2">
+                                </div>
+                            </div>
+                            <div class="form-group row">
+                                <label for="inputEmail3" class="col-sm-2 col-form-label">Mô tả</label>
+                                <div class="col-sm-10">
+                                    <textarea class="form-control" rows="10" id="course-description-2"></textarea>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="modal-footer justify-content-between">
+                            <button type="button" class="btn btn-default" data-dismiss="modal">Đóng</button>
+                            <button type="button" class="btn btn-info c2-add">Thêm mới</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+@*Modal 2*@
+<div class="modal fade" id="modal-lg">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h4 class="modal-title">Large Modal</h4>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div>
+                    <div class="card">
+                        <div class="card-header">
+                            <h3 class="card-title"></h3>
+
+                            <div class="card-tools">
+                                <div class="input-group input-group-sm" style="width: 150px;">
+                                    <input type="text" name="table_search" class="form-control float-right" placeholder="Tìm kiếm">
+
+                                    <div class="input-group-append">
+                                        <button type="submit" class="btn btn-default"><i class="fas fa-search"></i></button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="card-body table-responsive p-0" style="height: 300px;">
+                            <table class="table table-head-fixed">
+                                <thead>
+                                    <tr>
+                                        <th>Lộ trình</th>
+                                        <th>Thao tác</th>
+                                    </tr>
+                                </thead>
+                                <tbody class="modal-table-tbody">
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer justify-content-between">
+                <button type="button" class="btn btn-default" data-dismiss="modal">Đóng</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+@*Modal 3*@
+<div class="modal fade" id="modal-lg-detail">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h4 class="modal-title">Chi tiết nhóm bài tập</h4>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div>
+                    <div class="card">
+                        <div class="card-header">
+                            <h3 class="card-title"></h3>
+
+                            <div class="card-tools">
+                                <div class="input-group input-group-sm" style="width: 150px;">
+                                    <input type="text" name="table_search" class="form-control float-right" placeholder="Tìm kiếm">
+
+                                    <div class="input-group-append">
+                                        <button type="submit" class="btn btn-default"><i class="fas fa-search"></i></button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="card-body table-responsive p-0" style="height: 300px;">
+                            <table class="table table-head-fixed">
+                                <thead>
+                                    <tr>
+                                        <th>Tên câu hỏi</th>
+                                        <th>Thao tác</th>
+                                    </tr>
+                                </thead>
+                                <tbody class="l3-modal-table-tbody">
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@*Modal 4*@
+<div class="modal fade" id="modal-lg-add-l3">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h4 class="modal-title">Chi tiết nhóm bài tập</h4>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div>
+                    <div class="card">
+                        <div class="card-header">
+                            <h3 class="card-title"></h3>
+
+                            <div class="card-tools">
+                                <div class="input-group input-group-sm" style="width: 150px;">
+                                    <input type="text" name="table_search" class="form-control float-right" placeholder="Tìm kiếm">
+
+                                    <div class="input-group-append">
+                                        <button type="submit" class="btn btn-default"><i class="fas fa-search"></i></button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="card-body table-responsive p-0" style="height: 300px;">
+                            <table class="table table-head-fixed">
+                                <thead>
+                                    <tr>
+                                        <th>Nhóm bài tập</th>
+                                        <th>Thao tác</th>
+                                    </tr>
+                                </thead>
+                                <tbody class="l3-modal-table-tbody">
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+@section Scripts {
+    <script>
+        $(document).ready(function () {
+            var step = @step;
+            var cId = @courseId;
+            //Add data to left table
+            if (step != 0 && cId != 0) {
+                $.ajax({
+                    url: "@Url.Action("GetCourse")",
+                    type: "GET",
+                    datatype: "json",
+                    data: {
+                        courseId: cId
+                    }, success: function (data) {
+                        let result = JSON.parse(data);
+                        $("#course-name").val(result[0].CourseName);
+                        $("#course-title").val(result[0].CourseTitle);
+                        $("#course-description").val(result[0].CourseDescription);
+                    }
+                })
+            }
+
+            //Show existed course level 2
+            $("#course-level2-exist").on("click", function () {
+                $.ajax({
+                    type: "GET",
+                    url: "@Url.Action("GetAllCourseLevel2")",
+                    datatype: "json",
+                    data: {
+                        valid: true,
+                        id: ""
+                    }, success: function (data) {
+                        console.log(data);
+                        if (data != "") {
+                            $(".modal-table-tbody").empty();
+                            let result = JSON.parse(data);
+                            for (let i = 0; i < result.length; i++) {
+                                let currentCourseId = "#" + "id-course2-" + result[i].CourseId2;
+                                if (!$(currentCourseId).length) {
+                                    $(".modal-table-tbody").append(renderTableTr(result[i].Name, result[i].CourseId2));
+                                }
+                            }
+                            $("#modal-lg").modal("show");
+                            $(".modal-title").html("Danh sách khóa học sẵn có");
+                        }
+                    }
+                })
+            })
+            //Add new course level 2 modal show
+            $("#course-level2-add").on("click", function () {
+                $("#modal-lg-add").modal("show");
+                $(".modal-title").html("Thêm lộ trình mới");
+            })
+            //Submit add new course level 2
+            $(".c2-add").on("click", function () {
+                let courseName = $("#course-name-2").val();
+                let courseTitle = $("#course-title-2").val();
+                let courseDescription = $("#course-description-2").val();
+                $.ajax({
+                    type: "POST",
+                    url: "@Url.Action("AddNewCourseLevel2")",
+                    datatype: "json",
+                    data: {
+                        courseName: courseName,
+                        courseTitle: courseTitle,
+                        courseDescription: courseDescription
+                    }, success: function (data) {
+                        if (data != "") {
+                            let result = JSON.parse(data);
+                            $("#course-l2").append(renderCourseLevel2(result.CourseId2, result.Name, result.Title, result.Description));
+                            $("#modal-lg-add").modal("hide");
+                        }
+                    }
+                })
+            })
+        })
+
+        //Select existed course level 2
+        $(document).on("click", ".c-l2-add", function () {
+            let id = $(this).attr("id");
+            $.ajax({
+                type: "GET",
+                url: "@Url.Action("GetCourseLevel2")",
+                datatype: "json",
+                data: {
+                    courseId: id
+                }, success: function (data) {
+                    if (data != "") {
+                        let result = JSON.parse(data);
+                        $("#course-l2").append(renderCourseLevel2(result[0].CourseId2, result[0].Name, result[0].Title, result[0].Description));
+                        console.log(typeof (result[0].CourseId2));
+                        //Render course level 3
+                        getCourseLevel3(result[0].CourseId2, function (data2) {
+                            let c3 = JSON.parse(data2);
+                            for (let i = 0; i < c3.length; i++) {
+                                $("#course2-"+id).append(renderCourseLevel3(c3[i].CourseId3, c3[i].Name));
+                            }
+                        })
+                        $("#modal-lg").modal("hide");
+                    }
+                }
+            })
+        })
+
+        //Remove course level 2
+        $(document).on('click', '.course-l2-element-remove', function () {
+            let id = $(this).attr("id").split("-")[2];
+            $("#course2-" + id).remove();
+        })
+
+        //Get existing course level 3
+        $(document).on('click', '.course-l2-element', function () {
+            $("#modal-lg-add-l3").modal("show");
+        })
+
+        //Get course level 3 detail
+        $(document).on('click', '.c3-detail', function () {
+            $(".modal-title").html("Chi tiết nhóm bài tập")
+            let id = $(this).attr("id").split("-")[2];
+            $.ajax({
+                type: "GET",
+                url: "@Url.Action("GetCourseLevel3ById")",
+                datatype: "json",
+                data: {
+                    courseIdLevel3: id
+                }, success: function (data) {
+                    console.log(data);
+                    if (data != null) {
+                        var result = JSON.parse(data);
+                        var questions = result[0].Questions.split(',');
+                        $(".l3-modal-table-tbody").empty();
+                        for (let i = 0; i < questions.length; i++) {
+                            getQuestionsById(questions[i], function (data2) {
+                                var result2 = JSON.parse(data2);
+                                $(".l3-modal-table-tbody").append(renderQuestionTr(questions[i], result2[0].Name))
+                            })
+                        }
+                    }
+                }
+            })
+            $("#modal-lg-detail").modal("show");
+        })
+
+        function getQuestionsById(questionId, callback) {
+            return $.ajax({
+                type: "GET",
+                url: "@Url.Action("GetQuestionById")",
+                datatype: "json",
+                data: {
+                    questionId: questionId
+                }, success: callback
+            });
+        }
+
+        function getCourseLevel3(courseId2, callback) {
+            return $.ajax({
+                type: "GET",
+                url: "@Url.Action("GetCourseLevel3")",
+                datatype: "json",
+                cache: false,
+                data: {
+                    courseIdLevel2: courseId2
+                }, success: callback
+            })
+        }
+
+        function renderQuestionTr(questionId, questionName) {
+            var a = "<tr>";
+            a += "<td>" + questionName + "</td>";
+            a += "<td>";
+            a += "<div style='width: 50px;'>";
+            a += "<button type='button' class='c-l2-add btn btn-block bg-gradient-primary btn-sm' id='question-" + questionId + "'>Xem</button>";
+            a += "</div>";
+            a += "</td>";
+            a += "</tr>";
+            return a;
+        }
+
+        function renderTableTr(courseName, courseId) {
+            var a = "<tr>";
+                a += "<td>"+courseName+"</td>";
+                a += "<td>";
+                    a += "<div style='width: 50px;'>";
+                        a += "<button type='button' class='c-l2-add btn btn-block bg-gradient-primary btn-sm' id='" + courseId + "'>Chọn</button>";
+                    a += "</div>";
+                a += "</td>";
+            a += "</tr>";
+            return a;
+        }
+
+        function renderCourseLevel3(courseId, courseName) {
+            let div = "<div>";
+            div += "<div class='form-group row'>";
+            div += "<div class='col-6'>";
+            div += "<button type='button' class='btn btn-block btn-success'>"+courseName+"</button>";
+            div += "</div>";
+            div += "<div class='col-2'>";
+            div += "<button type='button' class='btn btn-block btn-warning c3-detail' id='c3-detail-"+courseId+"'>Chi tiết</button>";
+            div += "</div>";
+            div += "</div>";
+            div += "</div>";
+            return div;
+        }
+
+        function renderCourseLevel2(courseId, courseName, courseTitle, courseDescription) {
+            let div = "<div id='course2-" + courseId + "'>";
+            div += "<div class='form-group row' >";
+            div += "<div class='col-9'>";
+            div += "<button type='button' class='btn btn-block btn-info btn-lg' id='id-course2-" + courseId + "'>" + courseName + "</button>";
+            div += "</div>";
+            div += "<div class='col-2'>";
+            div += "<button type='button' class='btn btn-block btn-warning btn-lg course-l2-element' id='add-course2-" + courseId + "'><b>+</b></button>";
+            div += "</div>";
+            div += "<div class='col-1'>";
+            div += "<button type='button' class='btn btn-block btn-danger btn-lg course-l2-element-remove' id='remove-course2-" + courseId + "'>-</button>";
+            div += "</div>";
+            div += "</div>";
+            div += "</div>";
+            div += "</div>";
+            return div;
+        }
+    </script>
+}
+
+

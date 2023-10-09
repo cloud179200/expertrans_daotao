@@ -1,0 +1,368 @@
+﻿@model ExpertransDaoTao.ViewModel.StudentHistoryViewModel
+@using Newtonsoft.Json;
+@using System.Security.Claims
+@{
+    ViewData["Title"] = "Giáo viên - Lịch Sử Thi/Điểm";
+    Layout = "_LayoutTeacher";
+    string idHistory = ViewData["idHistory"] as string;
+    string error = ViewData["Error"] as string;
+
+    Students student = new Students();
+    List<TestHistory> histories = Model.TestHistorys.ToList();
+    TestHistory history = new TestHistory();
+    List<Question> questions = new List<Question>();
+    if (!string.IsNullOrEmpty(idHistory) && int.Parse(idHistory) != 0)
+    {
+        history = Model.TestHistorys.FirstOrDefault(t => t.HistoryId == int.Parse(idHistory));
+        if (history != null && history.EndDate != null)
+        {
+            student = Model.Students.FirstOrDefault(st => st.Id == history.StudentId);
+        }
+    }
+}
+<link rel="stylesheet" href="~/css/coursestudent.css">
+
+<!-- Content Header (Page header) -->
+<section class="content-header">
+    <div class="container-fluid">
+        <div class="row mb-2">
+            <div class="col-sm-6">
+                <h1>
+                    Lịch Sử
+                </h1>
+            </div>
+            <div class="col-sm-6">
+                <ol class="breadcrumb float-sm-right">
+                    <li class="breadcrumb-item"><a href="/admin">Trang chủ</a></li>
+                    <li class="breadcrumb-item active">Lịch sử thi</li>
+                </ol>
+            </div>
+        </div>
+    </div><!-- /.container-fluid -->
+</section>
+
+<!-- Main content -->
+@if (!string.IsNullOrEmpty(idHistory) && int.Parse(idHistory) != 0)
+{
+    <section class="content storing-history-id" id="@idHistory">
+        <div class="card card-primary card-outline">
+            <div class="card-header d-flex">
+                <a class="col-2 link" href="/teacher/testHistory"><i class="fas fa-arrow-left"></i></a>
+                <div class="card-title col-10 d-flex justify-content-end">
+                    <ul class="nav nav-pills">
+                        <li class="nav-item"><a class="nav-link active" href="#mark" data-toggle="tab">Chấm Điểm</a></li>
+                        <li class="nav-item"><a class="nav-link" href="#history" data-toggle="tab">Lịch Sử</a></li>
+                    </ul>
+                </div>
+            </div>
+            <div class="card-body">
+                <div class="tab-content">
+                    <div class="active tab-pane" id="mark">
+                    </div>
+                    <div class="tab-pane" id="history">
+                        <strong><i class="fas fa-user"></i>&nbsp;Người Làm Bài</strong>
+                        <p class="text-muted">
+                            @student.Name
+                        </p>
+                        <hr>@if (!string.IsNullOrEmpty(history.Marker))
+                        {
+                            var queryTeacher = Model.Teachers.FirstOrDefault(t => t.UserName == history.Marker);
+                            var queryAdmin = Model.Users.FirstOrDefault(t => t.UserName == history.Marker);
+                            <strong><i class="fas fa-user"></i>&nbsp;Người Chấm bài</strong>
+                            <p class="text-muted">
+                                @if (queryAdmin != null)
+                                {
+                                    @(queryAdmin.Name+" - Admin")
+                                }  @if (queryTeacher != null)
+                                {
+                                    @(queryTeacher.Name+" - Giáo Viên")
+                                }
+                            </p>
+                            <hr>
+                        }
+                        <strong><i class="fas fa-calendar"></i>&nbsp;Thời Gian Nộp Bài</strong>
+
+                        <p class="text-muted">
+                            @if (history.EndDate == null)
+                            {
+                                @("Chưa nộp bài");
+                            }
+                            else
+                            { @history.EndDate;
+                        }
+                        </p>
+
+                        <hr>
+                        <strong><i class="fas fa-check-circle"></i>&nbsp;Điểm</strong>
+
+                        <p class="text-muted">
+                            @(history.Total.GetValueOrDefault(0) + history.WritingScore.GetValueOrDefault(0)) / @history.TotalScore.GetValueOrDefault(0)
+                        </p>
+
+                        <hr>
+                        <strong><i class="fas fa-info-circle"></i>&nbsp;Chi tiết bài làm</strong>
+
+                        <div class="row p-2 m-4" id="detailHistory">
+                            @if (!string.IsNullOrEmpty(history.StudentResult))
+                            {
+                                var listResult = JsonConvert.DeserializeObject<List<JsonResultModel>>(history.StudentResult);
+                                foreach (JsonResultModel jr in listResult)
+                                {
+                                    @Html.Raw(System.Net.WebUtility.HtmlDecode(jr.HTMLHistory))
+                                }
+                            }
+                            else
+                            {
+                                <h3 class="col-12 text-center">Không có lịch sử chi tiết để hiển thị</h3>
+                            }
+                        </div>
+                        <hr>
+                    </div>
+                </div>
+
+            </div>
+            <!-- /.card -->
+        </div>
+    </section>
+}
+else
+{
+    <section class="content">
+        <div class="container-fluid">
+            <div class="row">
+                <div class="col-md-12">
+                    <div class="card">
+                        <div class="card-header">
+                            <h3 class="card-title">Lịch Sử Làm Bài</h3>
+                        </div>
+                        <!-- /.card-header -->
+                        <div class="card-body">
+                            <table class="table table-bordered history-table">
+                                <thead>
+                                    <tr>
+                                        <th style="width: 10px">#</th>
+                                        <th>Người Làm</th>
+                                        <th>Bài Thi</th>
+                                        <th>Thời Gian Bắt Đầu</th>
+                                        <th>Trạng thái</th>
+                                        <th></th>
+
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach (TestHistory th in histories)
+                                    {
+                                        Test test = Model.Tests.SingleOrDefault(t => t.TestId == th.TestId);
+                                        if (test != null)
+                                        {
+                                            if (!string.IsNullOrEmpty(test.TeacherIds))
+                                            {
+                                                string teacherId = test.TeacherIds.Split(",").SingleOrDefault(teacherId => teacherId == User.FindFirst(ClaimTypes.Authentication).Value);
+                                                if (teacherId != null)
+                                                {
+                                                    <tr>
+                                                        <td>@th.HistoryId</td>
+                                                        <td>@Model.Students.FirstOrDefault(s => s.Id == th.StudentId).Name</td>
+                                                        <td>@test.TestName</td>
+                                                        <td>@th.StartDate</td>
+                                                        @if (th.Status == 0 || th.Status == null)
+                                                        {
+                                                            <td class="text-danger">Chưa đầy đủ</td>
+                                                        }
+                                                        else if (th.Status == 1)
+                                                        {
+                                                            <td class="text-warning">Chưa chấm câu hỏi tự luận, viết lại câu</td>
+                                                        }
+                                                        else if (th.Status == 2)
+                                                        {
+                                                            <td class="text-success">Hoàn thành</td>
+                                                        }
+                                                        else
+                                                        {
+                                                            <td class="text-success">
+                                                                Đã được chấm bởi @if (!string.IsNullOrEmpty(th.Marker))
+                                                                {
+                                                                    var queryTeacher = Model.Teachers.FirstOrDefault(t => t.UserName == th.Marker);
+                                                                    var queryAdmin = Model.Users.FirstOrDefault(t => t.UserName == th.Marker);
+                                                                    @if (queryAdmin != null)
+                                                                    {
+                                                                        @(queryAdmin.Name+" - Admin")
+                                                                    } @if (queryTeacher != null)
+                                                                    {
+                                                                        @(queryTeacher.Name+" - Giáo Viên")
+                                                                    }
+                                                                }
+                                                            </td>
+                                                        }
+                                                        <td class="text-center"><a class="btn btn-info" href="/teacher/testhistory?idHistory=@th.HistoryId">Chi Tiết</a></td>
+                                                    </tr>
+                                                }
+                                            }
+                                        }
+                                    }
+                                </tbody>
+                            </table>
+                        </div>
+                        <!-- /.card-body -->
+
+                    </div>
+                    <!-- /.card -->
+                </div>
+                <!-- /.col -->
+            </div>
+            <!-- /.row -->
+        </div><!-- /.container-fluid -->
+    </section>
+    <!-- /.content -->
+}
+
+@section Scripts {
+    @if (!string.IsNullOrEmpty(idHistory) && int.Parse(idHistory) != 0)
+    {
+        <script>
+            document.querySelectorAll("textarea").forEach(elm => {
+                elm.disabled = true;
+            })
+            let mark = { idHistory: document.querySelector(".storing-history-id").id, DetailWritingMark: [] };
+            $.ajax({
+                url: "/Teacher/GetTestHistory",
+                type: "GET",
+                data: { historyId: mark.idHistory },
+                dataType: "json",
+                success: function (data) {
+                    const dataTestHistory = JSON.parse(data);
+                    console.log(dataTestHistory)
+                    if (dataTestHistory.DetailWritingMark !== null) {
+                        mark.DetailWritingMark = JSON.parse(dataTestHistory.DetailWritingMark);
+                    }
+                    document.querySelectorAll(".question").forEach(elm => {
+                        const quesId = elm.id.split("_")[1];
+                        const type = elm.id.split("_")[2];
+                        if (type == "4" || type == "5") {
+                            //Get question data
+                            const indexDetail = mark.DetailWritingMark.findIndex(i => String(i.QuestionId) === quesId);
+                            const questionData = mark.DetailWritingMark[indexDetail];
+
+                            const displayQuestionAndMark = document.createElement("div");
+                            displayQuestionAndMark.className = "row pb-3";
+                            const questionElm = document.createElement("div");
+                            questionElm.className = "card card-primary col-9";
+                            questionElm.innerHTML = `<div class="card-header"><h3 class="card-title"><strong><i class="fas fa-question"></i></strong></h3></div>` + elm.outerHTML;
+
+                            const markElm = document.createElement("div");
+                            markElm.className = "col-3 d-flex flex-column";
+                            markElm.innerHTML = `<label class="font-weight-bold">Điểm ${questionData.maxScore !== undefined && `- tối đa: ${questionData.maxScore}`}</label>`;
+                            const markInputElm = document.createElement("input");
+                            markInputElm.className = "form-control";
+                            markInputElm.type = "number";
+                            markInputElm.min = "0";
+                            markInputElm.max = `${questionData.maxScore}`;
+                            markInputElm.step = "0.1";
+                            markInputElm.value = mark.DetailWritingMark[indexDetail].mark;
+
+
+                            markInputElm.oninput = (e) => {
+                                if (parseFloat(markInputElm.value) > questionData.maxScore) {
+                                    markInputElm.value = `${questionData.maxScore}`;
+                                    return;
+                                }
+                                if (parseFloat(markInputElm.value) < 0) {
+                                    markInputElm.value = "0";
+                                    return;
+                                }
+                                console.log(mark);
+                                mark.DetailWritingMark[indexDetail].mark = parseFloat(markInputElm.value);
+                            }
+                            markElm.appendChild(markInputElm);
+                            //comment
+                            const labelComment = document.createElement("label");
+                            labelComment.className = "font-weight-bold";
+                            labelComment.innerText = "Nhận Xét";
+                            markElm.appendChild(labelComment);
+                            const commentInputElm = document.createElement("textarea");
+                            commentInputElm.className = "form-control";
+                            if (mark.DetailWritingMark[indexDetail].comment !== undefined) {
+                                commentInputElm.value = mark.DetailWritingMark[indexDetail].comment;
+                            }
+                            commentInputElm.oninput = (e) => {
+                                mark.DetailWritingMark[indexDetail].comment = e.target.value;
+                                console.log(mark);
+                            }
+                            markElm.appendChild(commentInputElm);
+                            //main element
+                            displayQuestionAndMark.appendChild(questionElm);
+                            displayQuestionAndMark.appendChild(markElm);
+
+                            const markTab = document.getElementById("mark");
+                            markTab.appendChild(displayQuestionAndMark);
+                            elm.removeAttribute("id");
+                        }
+                    })
+                    const button = document.createElement("button");
+                    button.className = "btn btn-outline-success col-3";
+                    button.innerHTML = `Lưu thay đổi`;
+                    button.onclick = (e) => {
+                        e.preventDefault();
+                        button.disabled = true;
+                        let WritingMark = 0;
+                        mark.DetailWritingMark.forEach(item => {
+                            WritingMark += item.mark;
+                        })
+                        $.ajax({
+                            url: "/Teacher/UpdateMarkTestHistory",
+                            type: "POST",
+                            data: { historyId: mark.idHistory, DetailWritingMark: JSON.stringify(mark.DetailWritingMark), WritingMark },
+                            dataType: "json",
+                            success: function (dataSuccess) {
+                                toastr.success("Lưu thành công");
+                                console.log(dataSuccess);
+                                button.disabled = false;
+
+                            },
+                            error: function (errMsg) {
+                                toastr.error("Lỗi cập nhật điểm");
+                                button.disabled = false;
+
+                            }
+                        });
+                    }
+                    document.getElementById("mark").appendChild(button);
+                },
+                error: function (errMsg) {
+                    toastr.error("Lỗi lấy dữ liệu");
+                }
+            });
+
+        </script>
+
+    }
+    else
+    {
+        <script>
+            $('.history-table').DataTable({
+                responsive: true,
+                language: {
+                    emptyTable: "Không có bản ghi nào để hiển thị",
+                    info: "Hiển thị START đến END trong TOTAL bản ghi",
+                    lengthMenu: "Hiển thị MENU",
+                    search: "Tìm kiếm:",
+                    paginate: {
+                        "first": "First",
+                        "last": "Last",
+                        "next": ">>",
+                        "previous": "<<"
+                    }
+                },
+                pageLength: 20
+            });
+        </script>
+    }
+
+
+    @if (!string.IsNullOrEmpty(error))
+    {
+        <script>
+            toastr.error("@error");
+        </script>
+    }
+}

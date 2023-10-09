@@ -1,0 +1,109 @@
+﻿@{
+    Layout = "_LayoutHome";
+    ViewData["Title"] = "Hệ thống đào tạo trực tuyến";
+}
+
+<div id="video">
+    <div class="preloader">
+        <div class="preloader-bounce">
+            <span></span>
+            <span></span>
+            <span></span>
+        </div>
+    </div>
+
+    <header id="header">
+        <div class="container-fluid">
+            <div class="navbar">
+                <img id="logo" alt="logo2" src="~/template/dist/img/logo2.png"  style="width:20%"/>
+                <div class="navigation-row">
+                    <nav id="navigation">
+                        <button type="button" class="navbar-toggle"> <i class="fa fa-bars"></i> </button>
+                        <div class="nav-box navbar-collapse">
+                            <ul class="navigation-menu nav navbar-nav navbars" id="nav">
+                                <li data-menuanchor="slide01" class="active"><a href="#slide01">Trang chủ</a></li>
+                                @*<li data-menuanchor="slide02"><a href="#slide02">Về chúng tôi</a></li>*@
+                                <li data-menuanchor="slide02"><a href="#slide02">Liên hệ</a></li>
+                                <li><a asp-area="" asp-controller="Home" asp-action="Login">Đăng nhập</a></li>
+                            </ul>
+                        </div>
+                    </nav>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <video autoplay muted loop id="myVideo">
+        <source src="home/images/video-bg.mp4" type="video/mp4">
+    </video>
+
+    <div id="fullpage" class="fullpage-default">
+
+        <div class="section animated-row" data-section="slide01">
+            <div class="section-inner">
+                <div class="welcome-box">
+                    <span class="welcome-first animate" data-animate="fadeInUp"><b>Hệ thống đào tạo trực tuyến</b></span>
+                    <p class="animate" data-animate="fadeInUp">Website cung cấp các khóa học, bài giảng, tài liệu và giáo trình điện tử tới toàn bộ học viên của Expertrans EI</p>
+                    <br>
+                    <span class="welcome-first animate" data-animate="fadeInUp" style="cursor:pointer;"><a asp-controller="Home" asp-action="Login"><b>ĐĂNG NHẬP</b></a></span>
+                    <div class="scroll-down next-section animate data-animate=" fadeInUp""><img src="home/images/mouse-scroll.png" alt=""><span>Cuộn xuống</span></div>
+                </div>
+            </div>
+        </div>
+        <div class="section animated-row" data-section="slide02">
+            <div class="section-inner">
+                <div class="row justify-content-center">
+                    <div class="col-md-7 wide-col-laptop">
+                        <div class="title-block animate" data-animate="fadeInUp">
+                            <span>Liên hệ</span>
+                            <h2>Bạn có thắc mắc ?</h2>
+                        </div>
+                        <div class="contact-section">
+                            <div class="row">
+                                <div class="col-md-6 animate" data-animate="fadeInUp">
+                                    <div class="contact-box">
+                                        <div class="contact-row">
+                                            <i class="fa fa-map-marker"></i>Số 63E, ngõ 91 Trần Quang Diệu, Đóng Đa, Hà Nội
+                                        </div>
+                                        <div class="contact-row">
+                                            <i class="fa fa-phone"></i> 092 606 4999
+                                        </div>
+                                        <div class="contact-row">
+                                            <i class="fa fa-envelope"></i> contact@expertrans.edu.vn
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-6 animate" data-animate="fadeInUp">
+                                    <form id="ajax-contact" method="post" action="#">
+                                        <div class="input-field">
+                                            <input type="text" class="form-control" name="name" id="name" required placeholder="Họ và tên">
+                                        </div>
+                                        <div class="input-field">
+                                            <input type="email" class="form-control" name="email" id="email" required placeholder="Email">
+                                        </div>
+                                        <div class="input-field">
+                                            <textarea class="form-control" name="message" id="message" required placeholder="Tin nhắn....."></textarea>
+                                        </div>
+                                        <button class="btn" type="submit">Gửi yêu cầu</button>
+                                    </form>
+                                    <div id="form-messages" class="mt-3"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="social-icons">
+        <div class="text-right">
+            <ul class="social-icons">
+                <li><a href="https://eigroup.vn/" title="Trang chủ"><i class="fa fa-home"></i></a></li>
+                <li><a href="https://www.facebook.com/ExpertransEI" title="Facebook"><i class="fa fa-facebook"></i></a></li>
+                <li><a href="https://www.youtube.com/c/ExpertransEI" title="Youtube"><i class="fa fa-youtube"></i></a></li>
+                <li><a href="https://www.tiktok.com/expertransei" title="Tiktok"><i class="fab fa-tiktok"></i></a></li>
+            </ul>
+        </div>
+    </div>
+</div>

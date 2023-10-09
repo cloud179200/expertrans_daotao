@@ -1,0 +1,19 @@
+﻿@using System.Security.Claims;
+@{
+    ViewData["Title"] = "Denied";
+    var role = User.FindFirst(ClaimTypes.Role);
+}
+
+<div class="error-page">
+    <h2 class="headline text-danger">Access Deniel</h2>
+
+    <div class="error-content">
+        <h3><i class="fas fa-exclamation-triangle text-danger"></i> Lỗi</h3>
+        <div class="text-primary">@role</div>
+        <p>
+            Tài khoản của bạn chưa được cấp quyền để vào trang này!
+            <a class="nav-link text-dark" asp-area="" asp-controller="Home" asp-action="Index">Trở lại trang chủ</a>
+        </p>
+    </div>
+</div>
+<!-- /.error-page -->

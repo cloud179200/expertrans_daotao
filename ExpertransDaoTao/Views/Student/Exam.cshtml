@@ -1,0 +1,485 @@
+﻿@model ExpertransDaoTao.ViewModel.StudentExamViewModel
+@using System.Security.Claims
+@{
+    ViewData["Title"] = "Học Viên - Kiểm Tra";
+
+    Layout = "_LayoutStudent";
+    string idTest = ViewData["IdTest"] as string;
+    string error = ViewData["Error"] as string;
+    string part = ViewData["Part"] as string;
+}
+<link rel="stylesheet" href="~/css/coursestudent.css">
+
+<!-- Content Header (Page header) -->
+<section class="content-header">
+    <div class="container-fluid">
+        <div class="row mb-2">
+            <div class="col-sm-6">
+                <h1>Kiểm Tra</h1>
+            </div>
+            <div class="col-sm-6">
+                <ol class="breadcrumb float-sm-right">
+                    <li class="breadcrumb-item">Học Viên</li>
+                    <li class="breadcrumb-item active">Kiểm Tra</li>
+                </ol>
+            </div>
+        </div>
+    </div><!-- /.container-fluid -->
+</section>
+<!-- Main content -->
+<section class="content">
+
+    @if (string.IsNullOrEmpty(idTest))
+    {
+        List<Test> listTestToAdd = new List<Test>();
+        Dictionary<Course, List<Test>> listCourseTest = new Dictionary<Course, List<Test>>();
+        @foreach (Course courseLevel1 in Model.Courses)
+        {
+            @if (courseLevel1.StudentIds != null)
+            {
+                List<string> listStudentId = courseLevel1.StudentIds.Split(",").Where(s => !string.IsNullOrEmpty(s)).ToList();
+                @if (listStudentId.IndexOf(User.FindFirst(ClaimTypes.Authentication).Value) != -1)
+                {
+                    listTestToAdd = new List<Test>();
+                    @foreach (Test t in Model.Tests)
+                    {
+                        if (t.CourseIds != null)
+                        {
+                            List<string> listCourseId = t.CourseIds.Split(",").Where(s => !string.IsNullOrEmpty(s)).ToList();
+                            if (listCourseId.IndexOf(courseLevel1.CourseId.ToString()) != -1)
+                            {
+                                listTestToAdd.Add(t);
+                            }
+                        }
+                    }
+                    if (listTestToAdd.Count > 0)
+                    {
+                        listCourseTest.Add(courseLevel1, listTestToAdd);
+
+                    }
+                }
+            }
+        }
+        <div class="col-12">
+            <div class="card card-primary">
+                <div class="card-header">
+                    <h3 class="card-title">Danh sách bài thi</h3>
+                </div>
+                <form role="form">
+                    <div class="card-body">
+                        <div class="row">
+                            @{
+                                int idCourse = 0;
+                                if (listCourseTest.Count > 0)
+                                {
+                                    idCourse = listCourseTest.FirstOrDefault().Key.CourseId;
+                                }
+                            }
+                            <div class="col-7 col-sm-9">
+                                <div class="tab-content" id="vert-tabs-right-tabContent">
+
+                                    @foreach (var item in listCourseTest)
+                                    {
+                                        <div class="tab-pane fade @if (idCourse == item.Key.CourseId){@("show active")}" id="vert-tabs-right-course-@item.Key.CourseId" role="tabpanel" aria-labelledby="vert-tabs-right-course-@item.Key.CourseId-tab">
+                                            @foreach (Test t in item.Value)
+                                            {
+                                                <div class="row mb-2">
+                                                    <div class="col-12 col-md-11 p-0">
+                                                        <button class="btn btn-outline-secondary btn-block font-weight-bold btn-lg do-exam-btn" id="doExam_@t.TestId" data-toggle="modal" data-target="#notiModal">@t.TestName - @t.Time Phút Làm Bài</button>
+                                                    </div>
+                                                    <div class="col p-0">
+
+                                                        @if (t.Status == 1)
+                                                        {<div class="btn btn-block btn-success btn-lg disabled" type="button" id="button-addon1">
+                                                                <i class="fas fa-lock-open"></i>
+                                                            </div>
+                                                        }
+                                                        else
+                                                        { <div class="btn btn-block btn-danger btn-lg disabled" type="button" id="button-addon1">
+                                                                <i class="fas fa-lock"></i>
+                                                            </div>}
+                                                    </div>
+                                                </div>
+                                            }
+                                        </div>
+                                    }
+                                </div>
+                            </div>
+                            <div class="col-5 col-sm-3">
+                                <div class="nav flex-column nav-tabs nav-tabs-right h-100" id="vert-tabs-right-tab" role="tablist" aria-orientation="vertical">
+                                    @foreach (var item in listCourseTest)
+                                    {
+                                        <a class="nav-link @if (idCourse == item.Key.CourseId) { @("active")} text-center" id="vert-tabs-right-course-@item.Key.CourseId-tab" data-toggle="pill" href="#vert-tabs-right-course-@item.Key.CourseId" role="tab" aria-controls="vert-tabs-right-course-@item.Key.CourseId" aria-selected="false">@item.Key.CourseId - @item.Key.CourseName</a>
+                                    }
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+        <div class="modal fade overflow-hidden" id="notiModal" tabindex="-1" role="dialog" aria-labelledby="notiModalLabel" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered" role="document">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title">Lưu Ý</h5>
+                        <button type="button" class="close close-video-modal" data-dismiss="modal" aria-label="Close">
+                            <span aria-hidden="true">&times;</span>
+                        </button>
+                    </div>
+                    <div class="modal-body text-left">
+                        Bằng cách nhấn <strong>Làm Bài</strong> dữ liệu của bạn sẽ được lưu vào lịch sử làm bài và <strong>bắt đầu tính giờ ngay khi chuyển đến trang làm bài</strong>.
+                        Mọi hành động reload lại trang, nộp bài quá thời gian sẽ bị tính 0 điểm. <strong>Tham khảo kĩ thời gian làm bài</strong> và chúc may mắn!
+                        <a class="btn btn-success col-12 mt-4 btn-lg" id="directToExam" href="#">Làm Bài</a>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-dismiss="modal">Đóng</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    }
+    else
+    {
+        Test test = Model.Tests.SingleOrDefault(t => t.TestId == int.Parse(idTest));
+        <div class="card card-primary card-outline">
+            <div class="card-header row">
+                <h3 class="card-title col-9"><a href="/Student/Exam"><i class="fas fa-arrow-left"></i></a>&nbsp;&nbsp;&nbsp;Sie machen jetzt den Test: @test.TestName - Teil: @(int.Parse(part)+1)/@Model.examQuestions.Count</h3>
+            </div>
+            <div class="text-center h2" id="countDownTimer" style="padding: 20px; border-radius: 40px; position: fixed; bottom: 5%; right: 5%; z-index: 9999; background-color: #ecf0f1; border:2px solid black">00m 00s</div>
+            <!-- /.card-header -->
+            <div class="card-body">
+                <form id="submitExamForm" class="col-12">
+
+                    @if (Model.examQuestions.Count() < 1)
+                    {
+                        <div class="col-12 text-center h1">Nichts zu zeigen</div>
+                    }
+                    else
+                    {
+                        var questionDataToRender = Model.examQuestions[int.Parse(part)];
+
+                        <div class="timeline">
+                            @foreach (QuestionGroupForExam quesGroupForEx in questionDataToRender.questions)
+                            {
+                                List<Question> lQues = new List<Question>();
+                                var groupContent = quesGroupForEx.content;
+
+                                foreach (int qId in quesGroupForEx.questionIds)
+                                {
+                                    Question questionItem = Model.Questions.SingleOrDefault(q => q.QuestionId == qId);
+                                    questionItem.Answer = Model.Answers.Where(a => a.QuestionId == qId).ToList();
+                                    lQues.Add(questionItem);
+                                    groupContent = System.Text.RegularExpressions.Regex.Replace(groupContent, $@"<br><\s*a[^>]*>question-{qId}<\s*/\s*a>", "");
+                                    groupContent = System.Text.RegularExpressions.Regex.Replace(groupContent, $@"<\s*a[^>]*>question-{qId}<\s*/\s*a>", "");
+                                }
+                                <div class="time-label markbook-part" id="markBook_@(int.Parse(part)+1)_@(questionDataToRender.questions.IndexOf(quesGroupForEx)+1)"><span class="p-2" style="background-color: #ADB5BD"><i class="fas fa-bookmark"></i>&nbsp;@(int.Parse(part)+1) - @(questionDataToRender.questions.IndexOf(quesGroupForEx)+1)</span></div>
+                                <div>
+                                    <i class="fas fa-question"></i>
+                                    <div class="timeline-item timeline-item-exam" id="timeLineItem_@(part)_@questionDataToRender.questions.IndexOf(quesGroupForEx)_@quesGroupForEx.listenAgain">
+                                        <div class="col-12">@Html.Raw(System.Net.WebUtility.HtmlDecode(groupContent))</div>
+                                        <div class="question-group-container container-fluid" id="questionGroupContainer_@(part)_@questionDataToRender.questions.IndexOf(quesGroupForEx)_@quesGroupForEx.listenAgain">
+                                            @foreach (Question ques in lQues)
+                                            {
+                                                <div class="col-12" style="min-height:450px">
+                                                    <div class="card card-primary">
+                                                        <div class="card-header">
+                                                            <h3 class="card-title">
+                                                                <strong><i class="fas fa-question"></i></strong>
+                                                            </h3>
+                                                        </div>
+                                                        <!-- /.card-header -->
+                                                        <div class="card-body question" id="Question_@(ques.QuestionId)_@ques.Type" style="min-height: 350px">
+                                                            @if (ques.Type == "1")
+                                                            {
+                                                                <div class="col-12 mb-3">
+                                                                    @Html.Raw(System.Net.WebUtility.HtmlDecode(ques.Content))
+                                                                </div>
+                                                                <div class="col-12">
+                                                                    <div class="form-group row text-center justify-content-center">
+                                                                        @foreach (Answer ans in ques.Answer)
+                                                                        {
+                                                                            <div class="select-for-type-1 p-1 m-1 @((ans.Type.IndexOf("video") != -1 || ans.Type.IndexOf("image") != -1) ? "col-5" : "col-12")" id="formCheck_@(ans.QuestionId)_@(ans.AnswerId)">
+                                                                                <input class="form-check-input d-none check-input-ans" id="inputCheck_@(ans.QuestionId)_@(ans.AnswerId)" type="checkbox">
+                                                                                <div class="form-check-label text-center">
+                                                                                    @if (ans.Type == "text")
+                                                                                    {
+                                                                                        <div class="check-lable-ans p-3" id="lableCheck_@(ans.QuestionId)_@(ans.AnswerId)" style="cursor:pointer">@ans.Content</div>
+                                                                                    }
+                                                                                    else if (ans.Type.IndexOf("video") != -1)
+                                                                                    {
+                                                                                        <div class="check-lable-ans" id="lableCheck_@(ans.QuestionId)_@(ans.AnswerId)" style="cursor:pointer">@(string.IsNullOrEmpty(ans.Content) ? "" : ans.Content )</div>
+                                                                                        <video controls class="col-12" src="/Admin/StreamFile/@ans.DocId" controlsList="nodownload"></video>
+                                                                                    }
+                                                                                    else if (ans.Type.IndexOf("image") != -1)
+                                                                                    {
+                                                                                        <div class="check-lable-ans" id="lableCheck_@(ans.QuestionId)_@(ans.AnswerId)" style="cursor:pointer">@(string.IsNullOrEmpty(ans.Content) ? "": ans.Content )</div>
+                                                                                        <img class="col-12" style="max-width:250px" src="/Admin/StreamFile/@ans.DocId">
+                                                                                    }
+                                                                                    else if (ans.Type.IndexOf("audio") != -1)
+                                                                                    {
+                                                                                        <div class="check-lable-ans" id="lableCheck_@(ans.QuestionId)_@(ans.AnswerId)" style="cursor:pointer">@(string.IsNullOrEmpty(ans.Content) ? "" : ans.Content )</div>
+                                                                                        <audio controls class="col-12" src="/Admin/StreamFile/@ans.DocId" controlsList="nodownload"></audio>
+                                                                                    }
+                                                                                </div>
+                                                                            </div>
+                                                                        }
+                                                                    </div>
+                                                                </div>
+
+                                                            }
+                                                            else if (ques.Type == "2")
+                                                            {
+                                                                <div class="col-12 mb-3">
+                                                                    @Html.Raw(System.Net.WebUtility.HtmlDecode(ques.Content))
+                                                                </div>
+                                                                <div class="col-12">
+                                                                    <div class="card">
+                                                                        <div class="card-header">
+                                                                            <h3 class="card-title">Ihre Antwort</h3>
+                                                                        </div>
+                                                                        <!-- /.card-header -->
+                                                                        <div class="card-body table-responsive p-0">
+                                                                            <table class="table table-head-fixed">
+                                                                                <thead>
+                                                                                    <tr>
+                                                                                        <th style="width: 45%" class="text-center"></th>
+                                                                                        <th style="width: 10%"></th>
+                                                                                        <th style="width: 45%" class="text-center"></th>
+                                                                                    </tr>
+                                                                                </thead>
+                                                                                <tbody class="display-answer-for-type-2" id="displayAnswerForType2_@ques.QuestionId">
+                                                                                    @for (int i = 0; i < ques.Answer.Count / 2; i++)
+                                                                                    {
+                                                                                        <tr>
+                                                                                            <td width="45%" id="displayAnswerForType2_left_@(ques.QuestionId)_index@(i)"></td>
+                                                                                            <td width="10%"></td>
+                                                                                            <td width="45%" id="displayAnswerForType2_right_@(ques.QuestionId)_index@(i)"></td>
+                                                                                        </tr>
+                                                                                    }
+                                                                                </tbody>
+                                                                            </table>
+                                                                        </div>
+                                                                        <!-- /.card-body -->
+                                                                    </div>
+                                                                    <div class="form-group text-center">
+                                                                        @{
+                                                                            var countForType2 = 0;
+                                                                            var displayAnswerForType2 = "";
+                                                                            List<Answer> listAnswer1 = new List<Answer>();
+                                                                            List<Answer> listAnswer2 = new List<Answer>();
+                                                                            for (int i = 0; i < ques.Answer.Count; i++)
+                                                                            {
+                                                                                if (i % 2 == 0)
+                                                                                {
+                                                                                    listAnswer1.Add(ques.Answer.ElementAt(i));
+
+                                                                                }
+                                                                                else
+                                                                                {
+                                                                                    listAnswer2.Add(ques.Answer.ElementAt(i));
+
+                                                                                }
+                                                                            }
+                                                                            listAnswer1 = listAnswer1.OrderBy(i => Guid.NewGuid()).ToList();
+                                                                            listAnswer2 = listAnswer2.OrderBy(i => Guid.NewGuid()).ToList();
+                                                                            List<Answer> listAnswerForType2 = new List<Answer>();
+                                                                            for (int i = 0; i < ques.Answer.Count / 2; i++)
+                                                                            {
+                                                                                listAnswerForType2.Add(listAnswer1[i]);
+                                                                                listAnswerForType2.Add(listAnswer2[i]);
+                                                                            }
+                                                                        }
+                                                                        @foreach (Answer ans in listAnswerForType2)
+                                                                        {
+                                                                            countForType2 += 1;
+                                                                            if (countForType2 == 1)
+                                                                            {
+                                                                                if (ans.Type == "text")
+                                                                                {
+                                                                                    displayAnswerForType2 += $"<div  class='container-fluid row mb-1'><div class='select-for-type-2 p-2 col-5 select-left-for-type-2 align-items-center d-flex' id='selectLeftForType2_{ans.QuestionId}_{ans.AnswerId}' style='min-height: 180px'><div class='col-12 font-weight-bold text-center' >{ans.Content}</div></div><div class='col-2'></div>";
+                                                                                }
+                                                                                else if (ans.Type.IndexOf("video") != -1)
+                                                                                {
+                                                                                    displayAnswerForType2 += $"<div class='container-fluid row mb-1'><div class='select-for-type-2 p-2 col-5 select-left-for-type-2 d-flex justify-content-center align-items-center' id='selectLeftForType2_{ans.QuestionId}_{ans.AnswerId}'><video controls class='col-12'src='/Admin/StreamFile/{ans.DocId}'></video></div><div class='col-2'></div>";
+                                                                                }
+                                                                                else if (ans.Type.IndexOf("image") != -1)
+                                                                                {
+                                                                                    displayAnswerForType2 += $"<div class='container-fluid row mb-1'><div class='select-for-type-2 p-2 col-5 select-left-for-type-2 d-flex justify-content-center align-items-center' id='selectLeftForType2_{ans.QuestionId}_{ans.AnswerId}' ><img src='/Admin/StreamFile/{ans.DocId}' class='col-12'/></div><div class='col-2'></div>";
+                                                                                }
+                                                                                else if (ans.Type.IndexOf("audio") != -1)
+                                                                                {
+                                                                                    displayAnswerForType2 += $"<div class='container-fluid row mb-1'><div class='select-for-type-2 p-2 col-5 select-left-for-type-2 d-flex justify-content-center align-items-center' id='selectLeftForType2_{ans.QuestionId}_{ans.AnswerId}' ><audio controls class='col-5 select-right-for-type-2' id='selectRightForType2_{ans.QuestionId}_{ans.AnswerId}' src='/Admin/StreamFile/{ans.DocId}'></audio></div><div class='col-2'></div>";
+                                                                                }
+                                                                            }
+                                                                            if (countForType2 == 2)
+                                                                            {
+                                                                                if (ans.Type == "text")
+                                                                                {
+                                                                                    displayAnswerForType2 += $"<div class='select-for-type-2 p-2 col-5 select-right-for-type-2 align-items-center d-flex' id='selectRightForType2_{ans.QuestionId}_{ans.AnswerId}'><div class='col-12 font-weight-bold text-center' style='min-height: 180px'>{ans.Content}</div></div></div>";
+                                                                                }
+                                                                                else if (ans.Type.IndexOf("video") != -1)
+                                                                                {
+                                                                                    displayAnswerForType2 += $"<div class='select-for-type-2 p-2 col-5 select-right-for-type-2 d-flex justify-content-center align-items-center' id='selectRightForType2_{ans.QuestionId}_{ans.AnswerId}'><video controls class='col-12' src='/Admin/StreamFile/{ans.DocId}'></video></div></div>";
+                                                                                }
+                                                                                else if (ans.Type.IndexOf("image") != -1)
+                                                                                {
+                                                                                    displayAnswerForType2 += $"<div class='select-for-type-2 p-2 col-5 select-right-for-type-2 d-flex justify-content-center align-items-center' id='selectRightForType2_{ans.QuestionId}_{ans.AnswerId}'><img src='/Admin/StreamFile/{ans.DocId}' class='col-12'/></div></div>";
+                                                                                }
+                                                                                else if (ans.Type.IndexOf("audio") != -1)
+                                                                                {
+                                                                                    displayAnswerForType2 += $"<div class='select-for-type-2 p-2 col-5 select-right-for-type-2 d-flex justify-content-center align-items-center' id='selectRightForType2_{ans.QuestionId}_{ans.AnswerId}'><audio controls class='col-12' src='/Admin/StreamFile/{ans.DocId}'></audio></div></div>";
+                                                                                }
+                                                                                @Html.Raw(System.Net.WebUtility.HtmlDecode(displayAnswerForType2))
+                                                                                countForType2 = 0;
+                                                                                displayAnswerForType2 = "";
+                                                                            }
+                                                                        }
+                                                                    </div>
+                                                                </div>
+                                                            }
+                                                            else if (ques.Type == "3")
+                                                            {
+                                                                <div class="col-12 mb-3" style=" min-height: 300px">
+                                                                    @{
+                                                                        var quesContentDisplayForType_3 = ques.Content;
+                                                                    }
+                                                                    @foreach (Answer ans in ques.Answer)
+                                                                    {
+                                                                        quesContentDisplayForType_3 = System.Text.RegularExpressions.Regex.Replace(quesContentDisplayForType_3, @"\[" + ans.AnswerId.ToString() + @"\]", $"<input class='input-text-for-type-3 text-center' autocomplete='off' placeholder='...............' id='inputTextForType3_{ans.QuestionId}_{ans.AnswerId}' type='text'/>");
+                                                                    }
+                                                                    @Html.Raw(System.Net.WebUtility.HtmlDecode(quesContentDisplayForType_3))
+                                                                </div>
+                                                            }
+                                                            else if (ques.Type == "4")
+                                                            {
+                                                                <div class="col-12 mb-3" style=" min-height: 300px">
+                                                                    @Html.Raw(System.Net.WebUtility.HtmlDecode(ques.Content))
+                                                                </div>
+                                                                <div class="col-12">
+                                                                    <div class="form-group">
+                                                                        <label for="inputTextForType4_@ques.QuestionId">Trả Lời:</label>
+                                                                        <textarea class="form-control input-text-for-type-4" id="inputTextForType4_@ques.QuestionId" rows="10"></textarea>
+                                                                    </div>
+                                                                </div>
+                                                            }
+                                                            else if (ques.Type == "5")
+                                                            {
+                                                                <div class="col-12 mb-3" style="min-height: 300px">
+                                                                    @Html.Raw(System.Net.WebUtility.HtmlDecode(ques.Content))
+                                                                </div>
+                                                                <div class="col-12">
+                                                                    <div class="form-group">
+                                                                        <label for="inputTextForType5_@ques.QuestionId">Trả Lời:</label>
+                                                                        <textarea class="form-control input-text-for-type-5" id="inputTextForType5_@ques.QuestionId" rows="10"></textarea>
+                                                                    </div>
+                                                                </div>
+                                                            }
+                                                            else if (ques.Type == "6")
+                                                            {
+                                                                <div class="col-12 mb-3">
+                                                                    @Html.Raw(System.Net.WebUtility.HtmlDecode(ques.Content))
+                                                                </div>
+                                                                <div class="col-12">
+                                                                    <div class="form-group row text-center justify-content-center">
+                                                                        @foreach (Answer ans in ques.Answer)
+                                                                        {
+                                                                            <div class="select-for-type-6 p-1 m-1 @((ans.Type.IndexOf("video") != -1 || ans.Type.IndexOf("image") != -1) ? "col-5" : "col-12")" id="formCheck_@(ans.QuestionId)_@(ans.AnswerId)">
+                                                                                <input class="form-check-input d-none check-input-ans" id="inputCheck_@(ans.QuestionId)_@(ans.AnswerId)" type="checkbox">
+                                                                                <div class="form-check-label text-center">
+                                                                                    @if (ans.Type == "text")
+                                                                                    {
+                                                                                        <div class="check-lable-ans-type-6 p-3" id="lableCheck_@(ans.QuestionId)_@(ans.AnswerId)" style="cursor:pointer">@ans.Content</div>
+                                                                                    }
+                                                                                    else if (ans.Type.IndexOf("video") != -1)
+                                                                                    {
+                                                                                        <div class="check-lable-ans-type-6" id="lableCheck_@(ans.QuestionId)_@(ans.AnswerId)" style="cursor:pointer">@(string.IsNullOrEmpty(ans.Content) ? "" : ans.Content )</div>
+                                                                                        <video controls class="col-12" src="/Admin/StreamFile/@ans.DocId" controlsList="nodownload"></video>
+                                                                                    }
+                                                                                    else if (ans.Type.IndexOf("image") != -1)
+                                                                                    {
+                                                                                        <div class="check-lable-ans-type-6" id="lableCheck_@(ans.QuestionId)_@(ans.AnswerId)" style="cursor:pointer">@(string.IsNullOrEmpty(ans.Content) ? "" : ans.Content )</div>
+                                                                                        <img class="col-12" style="max-width:250px" src="/Admin/StreamFile/@ans.DocId">
+                                                                                    }
+                                                                                    else if (ans.Type.IndexOf("audio") != -1)
+                                                                                    {
+                                                                                        <div class="check-lable-ans-type-6" id="lableCheck_@(ans.QuestionId)_@(ans.AnswerId)" style="cursor:pointer">@(string.IsNullOrEmpty(ans.Content) ? "" : ans.Content )</div>
+                                                                                        <audio controls class="col-12" src="/Admin/StreamFile/@ans.DocId" controlsList="nodownload"></audio>
+                                                                                    }
+                                                                                </div>
+                                                                            </div>
+                                                                        }
+                                                                    </div>
+                                                                </div>
+                                                            }
+                                                        </div>
+                                                        <!-- /.card-body -->
+                                                    </div>
+                                                </div>
+
+                                            }
+                                        </div>
+                                    </div>
+                                </div>
+
+                            }
+                        </div>
+                        <button type="submit" class="btn btn-outline-primary btn-lg mb-2 submit-exam-btn @if ((int.Parse(part) + 1) != Model.examQuestions.Count()){@("d-none")}" id="submitExambtn_@(test.TestId)_@(Model.historyId)_@(questionDataToRender.totalTime)_@part">
+                            Test angeben
+                        </button>
+                    }
+
+                </form>
+                @if ((int.Parse(part) + 1) != Model.examQuestions.Count())
+                {<div class="h3 text-center text-danger">*Sie werden automatisch weitergeleitet, wenn das Zeitlimit für diesen Teil abgelaufen ist.</div>}
+            </div>
+            <!-- /.card-body -->
+        </div>
+
+
+    }
+</section>
+<div class="col-12 d-none fixed-top justify-content-end align-items-center pb-3" style="min-height: 100px; transition: 0.2s; background-color: #ecf0f1; border-bottom: 2px solid #95a5a6" id="scrollFixedContentContainer">
+    <a href="#" class="col-sm-2 col-md-3 col-6 btn btn-lg btn-dark font-weight-bold text-white"></a>
+    <div class="col-sm-7 col-md-6 col-6 p-1 ml-2 scroll-bar-custom" style="border-radius: 10px;max-height:20vh; border: 2px solid black; overflow-y: auto;"></div>
+</div>
+@section Scripts {
+    @if (string.IsNullOrEmpty(idTest))
+    {
+
+
+        <script>
+            document.querySelectorAll(".do-exam-btn").forEach(elm => {
+                const idTest = elm.id.split("_")[1];
+                elm.addEventListener("click", e => {
+                    e.preventDefault();
+                    document.getElementById("directToExam").href = "/Student/Exam?IdTest=" + idTest + "&&Part=0";
+                })
+            })
+        </script>
+        @if (!string.IsNullOrEmpty(error))
+        {
+            <script>
+                toastr.error("@error");
+            </script>
+        }
+    }
+    else
+    {
+        <script>
+            const _0x32c783 = _0x4f64; (function (_0x2e166a, _0x55da6a) { const _0x4e43a5 = _0x4f64, _0x58b83e = _0x2e166a(); while (!![]) { try { const _0x3d1aba = parseInt(_0x4e43a5(0x175)) / 0x1 * (parseInt(_0x4e43a5(0x16f)) / 0x2) + -parseInt(_0x4e43a5(0x110)) / 0x3 * (parseInt(_0x4e43a5(0x18f)) / 0x4) + parseInt(_0x4e43a5(0x18d)) / 0x5 * (-parseInt(_0x4e43a5(0x122)) / 0x6) + -parseInt(_0x4e43a5(0x160)) / 0x7 + -parseInt(_0x4e43a5(0x182)) / 0x8 + -parseInt(_0x4e43a5(0x11a)) / 0x9 + parseInt(_0x4e43a5(0x191)) / 0xa; if (_0x3d1aba === _0x55da6a) break; else _0x58b83e['push'](_0x58b83e['shift']()); } catch (_0x234c62) { _0x58b83e['push'](_0x58b83e['shift']()); } } }(_0x5712, 0x6955e)); const _0x499093 = (function () { let _0x28405e = !![]; return function (_0x546ef6, _0x2f5459) { const _0x28200c = _0x28405e ? function () { const _0x570f0b = _0x4f64; if (_0x2f5459) { const _0x34ec4d = _0x2f5459[_0x570f0b(0x14a)](_0x546ef6, arguments); return _0x2f5459 = null, _0x34ec4d; } } : function () { }; return _0x28405e = ![], _0x28200c; }; }()), _0xe8bc05 = _0x499093(this, function () { const _0x2b65ac = _0x4f64; let _0x33cf7f; try { const _0x4bb3b7 = Function(_0x2b65ac(0x14f) + _0x2b65ac(0x154) + ');'); _0x33cf7f = _0x4bb3b7(); } catch (_0x50a21a) { _0x33cf7f = window; } const _0x1a31eb = _0x33cf7f['console'] = _0x33cf7f['console'] || {}, _0x39bad9 = [_0x2b65ac(0x163), _0x2b65ac(0x147), _0x2b65ac(0x15f), _0x2b65ac(0x180), _0x2b65ac(0x105), _0x2b65ac(0x18b), _0x2b65ac(0x13e)]; for (let _0x19484d = 0x0; _0x19484d < _0x39bad9['length']; _0x19484d++) { const _0x3a0eac = _0x499093[_0x2b65ac(0x12b)][_0x2b65ac(0x15d)][_0x2b65ac(0x129)](_0x499093), _0x29a672 = _0x39bad9[_0x19484d], _0x30fd67 = _0x1a31eb[_0x29a672] || _0x3a0eac; _0x3a0eac['__proto__'] = _0x499093[_0x2b65ac(0x129)](_0x499093), _0x3a0eac[_0x2b65ac(0x132)] = _0x30fd67[_0x2b65ac(0x132)][_0x2b65ac(0x129)](_0x30fd67), _0x1a31eb[_0x29a672] = _0x3a0eac; } }); _0xe8bc05(), window[_0x32c783(0x17b)] = _0x2f29b0 => { const _0x2a6641 = _0x32c783; console[_0x2a6641(0x163)](_0x2a6641(0x16e)); const _0x317274 = document[_0x2a6641(0x10f)](_0x2a6641(0x168)), _0x1c8829 = document[_0x2a6641(0x10f)](_0x2a6641(0x168))[_0x2a6641(0x17f)]; document['getElementById']('scrollFixedContentContainer')[_0x2a6641(0x13a)][_0x2a6641(0x17c)](_0x2a6641(0x13c)), document['getElementById'](_0x2a6641(0x168))[_0x2a6641(0x13a)][_0x2a6641(0x13f)](_0x2a6641(0x150)); const _0x5ccd46 = document['querySelector'](_0x2a6641(0x170)); _0x5ccd46[_0x2a6641(0x13a)][_0x2a6641(0x128)](_0x2a6641(0x179)) ? (_0x317274[_0x2a6641(0x13a)]['remove'](_0x2a6641(0x176)), _0x317274[_0x2a6641(0x13a)][_0x2a6641(0x17c)](_0x2a6641(0x106))) : (_0x317274[_0x2a6641(0x13a)]['add'](_0x2a6641(0x176)), _0x317274[_0x2a6641(0x13a)][_0x2a6641(0x13f)](_0x2a6641(0x106))); let _0x2bc7c9 = document['querySelector'](_0x2a6641(0x12f)); const _0x158a02 = document['querySelectorAll']('.markbook-part'), _0x136932 = document[_0x2a6641(0x124)](_0x2a6641(0x16c)); _0x158a02[_0x2a6641(0x10d)](_0x4f9f55 => { const _0x4c6a17 = _0x2a6641, _0x509140 = _0x4f9f55['getBoundingClientRect'](), _0x1f2fb1 = document[_0x4c6a17(0x115)](_0x4c6a17(0x170))[_0x4c6a17(0x184)](), _0x356304 = _0x509140[_0x4c6a17(0x149)] + _0x1f2fb1['top']; let _0x505296 = ![]; const _0x54dec5 = Array[_0x4c6a17(0x17a)](_0x158a02)['findIndex'](_0x22d14b => _0x22d14b === _0x4f9f55) + 0x1; _0x2bc7c9 = _0x158a02[_0x54dec5]; if (_0x2bc7c9 !== undefined) { const _0x5c08ec = _0x2bc7c9['getBoundingClientRect']()[_0x4c6a17(0x149)] * _0x54dec5 + _0x1f2fb1[_0x4c6a17(0x149)]; _0x5c08ec < -window['innerHeight'] && (_0x505296 = !![]); } if (_0x505296) return; if (_0x1f2fb1[_0x4c6a17(0x145)] - 0xc8 < window[_0x4c6a17(0x111)]) return; if (_0x356304 < -(window[_0x4c6a17(0x111)] / 0x2)) { let _0x4fa047 = _0x136932[_0x54dec5 - 0x1][_0x4c6a17(0x17f)][_0x4c6a17(0x18c)](0x0)['innerText']; _0x4fa047 = _0x4fa047['replace'](/\n/gm, ''), _0x4fa047 = _0x4fa047[_0x4c6a17(0x121)](), console['log'](_0x4fa047); if (_0x4fa047 === '') return; if (_0x2bc7c9 === undefined) { if (_0x509140[_0x4c6a17(0x149)] < -(window[_0x4c6a17(0x111)] / 0x2)) { document[_0x4c6a17(0x10f)](_0x4c6a17(0x168))[_0x4c6a17(0x13a)][_0x4c6a17(0x17c)](_0x4c6a17(0x150)), document['getElementById'](_0x4c6a17(0x168))[_0x4c6a17(0x13a)]['remove'](_0x4c6a17(0x13c)), _0x1c8829[_0x4c6a17(0x18c)](0x0)['innerHTML'] = _0x4f9f55['children']['item'](0x0)['innerHTML'], _0x1c8829['item'](0x0)[_0x4c6a17(0x18e)] = '#' + _0x4f9f55['id']; const _0x208a65 = _0x136932[_0x54dec5 - 0x1][_0x4c6a17(0x17f)]['item'](0x0)['cloneNode'](!![]); _0x1c8829[_0x4c6a17(0x18c)](0x1)['innerHTML'] = '', _0x1c8829[_0x4c6a17(0x18c)](0x1)[_0x4c6a17(0x166)](_0x208a65); } } else { document[_0x4c6a17(0x10f)](_0x4c6a17(0x168))[_0x4c6a17(0x13a)][_0x4c6a17(0x17c)](_0x4c6a17(0x150)), document[_0x4c6a17(0x10f)](_0x4c6a17(0x168))[_0x4c6a17(0x13a)]['remove']('d-none'), _0x1c8829[_0x4c6a17(0x18c)](0x0)[_0x4c6a17(0x140)] = _0x4f9f55['children']['item'](0x0)[_0x4c6a17(0x140)], _0x1c8829[_0x4c6a17(0x18c)](0x0)[_0x4c6a17(0x18e)] = '#' + _0x4f9f55['id']; const _0x5e4663 = _0x136932[_0x54dec5 - 0x1][_0x4c6a17(0x17f)][_0x4c6a17(0x18c)](0x0)['cloneNode'](!![]); _0x1c8829['item'](0x1)['innerHTML'] = '', _0x1c8829[_0x4c6a17(0x18c)](0x1)[_0x4c6a17(0x166)](_0x5e4663); } } }); }; let listenAgainCheck = []; function _0x5712() { const _0x3beec0 = ['188152LMfgVH', 'inputCheck_', 'getBoundingClientRect', 'IdAnswer', 'min-height:\x20180px', 'Nộp\x20bài\x20thành\x20công!', '#0098FF', 'outerHTML', 'countDownTimer', 'table', 'item', '5lUhIFq', 'href', '744LgqXqi', '.input-text-for-type-5', '4587710ymdbxy', 'Answer', 'borderRadius', 'exception', 'justify-content-center', 'className', 'lastElementChild', 'input', 'Nộp\x20bài\x20thất\x20bại!', 'value', 'AUDIO', 'forEach', 'AnswerJsonString', 'getElementById', '1983aGQPSZ', 'innerHeight', '&&Part=', 'div', 'load', 'querySelector', 'ajax', 'findIndex', 'pause', 'addEventListener', '31239gfQDZS', 'removeChild', 'form-check-label', 'createElement', 'formCheck_', 'btn\x20btn-dark\x20col-12\x20audio-btn', '_after', 'trim', '162366MKlaTJ', 'IdTest', 'querySelectorAll', 'Right', 'disabled', 'stringify', 'contains', 'bind', '.check-input-ans', 'constructor', 'tagName', 'src', 'replaceChild', '.markbook-part', '.input-text-for-type-4', 'pointer', 'toString', '_index', 'Place', 'displayAnswerForType2_left_', '.select-right-for-type-2', 'min-height:\x20180px;', '/Student/PostExam', 'childElementCount', 'classList', '5s\x20để\x20chuyển\x20trang:\x20', 'd-none', 'push', 'trace', 'remove', 'innerHTML', '.check-lable-ans-type-6', 'length', 'floor', 'VIDEO', 'bottom', 'location', 'warn', 'target', 'top', 'apply', 'selectLeftForType2_', 'listenAgain', '.input-text-for-type-3', 'cloneNode', 'return\x20(function()\x20', 'd-flex', 'Result', 'cursor', '.check-lable-ans', '{}.constructor(\x22return\x20this\x22)(\x20)', 'backgroundColor', 'col-12', 'Left', '/Student/History', 'split', '.timeline-item-exam', 'checked', 'Bạn\x20đã\x20nộp\x20phần\x20bài\x20thi\x20này', 'prototype', 'select-left-for-type-2', 'info', '32256DOPxxT', '.select-left-for-type-2', 'element', 'log', 'parentNode', 'onclick', 'appendChild', 'displayAnswerForType2_right_', 'scrollFixedContentContainer', 'selectRightForType2_', 'firstChild', 'col-5', '.timeline-item', 'select-right-for-type-2', '[Scroll]', '38572feiSRV', 'body', 'IdQuestion', 'Answers', 'submitExamForm', 'background-color:white', '8XKiQsZ', 'justify-content-end', 'getTime', 'style', 'sidebar-collapse', 'from', 'onscroll', 'add', '\x20audio', '.submit-exam-btn', 'children', 'error', 'replace']; _0x5712 = function () { return _0x3beec0; }; return _0x5712(); } function _0x4f64(_0x375c68, _0x3b961c) { const _0x1c968d = _0x5712(); return _0x4f64 = function (_0xe8bc05, _0x499093) { _0xe8bc05 = _0xe8bc05 - 0x103; let _0x1eecdb = _0x1c968d[_0xe8bc05]; return _0x1eecdb; }, _0x4f64(_0x375c68, _0x3b961c); } document[_0x32c783(0x124)](_0x32c783(0x15a))['forEach'](_0x5c849a => { const _0x2a9e83 = _0x32c783, _0x34c555 = document[_0x2a9e83(0x124)]('#' + _0x5c849a['id'] + _0x2a9e83(0x17d)); _0x34c555['forEach'](_0x2b9f4c => { const _0x26d063 = _0x2a9e83, _0x3ebc1a = document['createElement'](_0x26d063(0x113)); _0x3ebc1a[_0x26d063(0x107)] = _0x26d063(0x11f), _0x3ebc1a[_0x26d063(0x140)] = '<i\x20class=\x22fas\x20fa-play\x22></i>&nbsp;Audio\x20Abspielen', _0x3ebc1a[_0x26d063(0x178)][_0x26d063(0x104)] = '20px', _0x3ebc1a['style'][_0x26d063(0x152)] = _0x26d063(0x131), _0x3ebc1a['onclick'] = _0x1558c9 => { const _0xac315f = _0x26d063; _0x1558c9['preventDefault'](); const _0x3f548b = _0x1558c9[_0xac315f(0x148)][_0xac315f(0x164)]; console['log'](_0x3f548b); if (!_0x3f548b[_0xac315f(0x13a)]['contains'](_0xac315f(0x11c)) && !_0x3f548b['classList']['contains'](_0xac315f(0x15e)) && !_0x3f548b[_0xac315f(0x13a)][_0xac315f(0x128)](_0xac315f(0x16d))) { const _0x5b8ede = listenAgainCheck[_0xac315f(0x117)](_0x318ec7 => _0x318ec7[_0xac315f(0x162)] === _0x3ebc1a); let _0x515797 = listenAgainCheck[_0x5b8ede][_0xac315f(0x14c)]; if (_0x515797 <= 0x0) return; _0x515797 = listenAgainCheck[_0x5b8ede][_0xac315f(0x14c)] - 0x1, listenAgainCheck[_0x5b8ede]['listenAgain'] = _0x515797; } const _0x747225 = new Audio(_0x2b9f4c[_0xac315f(0x12d)]); _0x747225['play'](); }, listenAgainCheck[_0x26d063(0x13d)]({ 'element': _0x3ebc1a, 'listenAgain': parseInt(_0x5c849a['id'][_0x26d063(0x159)]('_')[0x3]) }); const _0x56d621 = _0x2b9f4c[_0x26d063(0x164)]; _0x56d621[_0x26d063(0x12e)](_0x3ebc1a, _0x2b9f4c); }); }); let submited = ![], next = undefined; const countDownDate = new Date()[_0x32c783(0x177)]() + parseInt(document[_0x32c783(0x115)](_0x32c783(0x17e))['id'][_0x32c783(0x159)]('_')[0x3]) * 0x3c * 0x3e8, timerCountDown = setInterval(function () { const _0x49c4de = _0x32c783, _0x338031 = new Date()['getTime'](), _0x58acbf = countDownDate - _0x338031, _0x1bc601 = Math[_0x49c4de(0x143)](_0x58acbf % (0x3e8 * 0x3c * 0x3c * 0x18) / (0x3e8 * 0x3c * 0x3c)), _0x431f99 = Math[_0x49c4de(0x143)](_0x58acbf % (0x3e8 * 0x3c * 0x3c) / (0x3e8 * 0x3c)), _0x5bbfee = Math[_0x49c4de(0x143)](_0x58acbf % (0x3e8 * 0x3c) / 0x3e8); if (submited) { if (next === undefined) { document['getElementById'](_0x49c4de(0x18a))[_0x49c4de(0x140)] = 'Bạn\x20đã\x20nộp\x20bài'; const _0x424a4f = new Date()['getTime']() + 0x157c, _0x1892ad = setInterval(() => { const _0x43b9b4 = _0x49c4de, _0x3e6e53 = new Date()[_0x43b9b4(0x177)](), _0x1345e3 = _0x424a4f - _0x3e6e53; toastr['info'](_0x43b9b4(0x13b) + Math[_0x43b9b4(0x143)](_0x1345e3 % (0x3e8 * 0x3c) / 0x3e8)), _0x1345e3 < 0x0 && clearInterval(_0x1892ad); }, 0x3e8), _0xb760d6 = setTimeout(() => { const _0x48686c = _0x49c4de; window['location']['replace'](_0x48686c(0x158)), clearTimeout(_0xb760d6); }, 0x157c); clearInterval(timerCountDown); } else { document[_0x49c4de(0x10f)]('countDownTimer')[_0x49c4de(0x140)] = _0x49c4de(0x15c); const _0x7b51fb = window['location']['pathname'], _0x399185 = window[_0x49c4de(0x146)]['search']; window[_0x49c4de(0x146)][_0x49c4de(0x181)](_0x7b51fb + _0x399185[_0x49c4de(0x159)]('&&')[0x0] + _0x49c4de(0x112) + next); } } else { if (_0x58acbf < 0x0) { if (submited === ![]) { submited = !![]; const _0x470951 = document['getElementById'](_0x49c4de(0x173))[_0x49c4de(0x14e)](!![]); _0x470951[_0x49c4de(0x11b)](_0x470951[_0x49c4de(0x108)]); const _0xfc4935 = _0x470951[_0x49c4de(0x189)]; answerCheckResult[_0x49c4de(0x123)] = document[_0x49c4de(0x115)](_0x49c4de(0x17e))['id'][_0x49c4de(0x159)]('_')[0x1], answerCheckResult['IdHistory'] = document[_0x49c4de(0x115)](_0x49c4de(0x17e))['id']['split']('_')[0x2], document[_0x49c4de(0x115)](_0x49c4de(0x17e))['disabled'] = !![], $[_0x49c4de(0x116)]({ 'url': _0x49c4de(0x138), 'type': 'POST', 'data': { ...answerCheckResult, 'HTMLHistory': _0xfc4935 }, 'dataType': 'json', 'async': ![], 'success': function (_0x16ab5e) { const _0x257b2d = _0x49c4de, _0x15f82e = JSON['parse'](_0x16ab5e); console[_0x257b2d(0x163)](_0x15f82e), toastr['success'](_0x257b2d(0x187)), next = _0x15f82e['next']; }, 'error': function (_0x3bb9c3) { const _0x398fe0 = _0x49c4de; toastr[_0x398fe0(0x180)](_0x398fe0(0x10a)), document[_0x398fe0(0x115)]('.submit-exam-btn')[_0x398fe0(0x126)] = ![], submited === ![]; } }); } return; } if (_0x1bc601 > 0x0) document[_0x49c4de(0x10f)]('countDownTimer')['innerHTML'] = _0x1bc601 + 'h\x20' + _0x431f99 + 'm\x20' + _0x5bbfee + 's\x20'; else document[_0x49c4de(0x10f)](_0x49c4de(0x18a))[_0x49c4de(0x140)] = _0x431f99 + 'm\x20' + _0x5bbfee + 's\x20'; } }, 0x3e8), answerCheckResult = { 'Result': [], 'Part': parseInt(document['querySelector']('.question-group-container')['id'][_0x32c783(0x159)]('_')[0x1]) }; document['querySelectorAll'](_0x32c783(0x12a))[_0x32c783(0x10d)](_0x514d5f => { const _0x26a60a = _0x32c783, _0x197180 = _0x514d5f['id'][_0x26a60a(0x159)]('_')[0x1], _0x5d5bac = _0x514d5f['id'][_0x26a60a(0x159)]('_')[0x2]; let _0x176e80 = answerCheckResult[_0x26a60a(0x151)]['findIndex'](_0x170536 => _0x170536[_0x26a60a(0x171)] == _0x197180); if (_0x176e80 === -0x1) answerCheckResult[_0x26a60a(0x151)][_0x26a60a(0x13d)]({ 'IdQuestion': _0x197180, 'Answers': [{ 'IdAnswer': _0x5d5bac, 'Answer': ![] }] }), _0x176e80 = answerCheckResult[_0x26a60a(0x151)][_0x26a60a(0x117)](_0x415097 => _0x415097[_0x26a60a(0x171)] == _0x197180), answerCheckResult[_0x26a60a(0x151)][_0x176e80][_0x26a60a(0x10e)] = JSON[_0x26a60a(0x127)](answerCheckResult[_0x26a60a(0x151)][_0x176e80][_0x26a60a(0x172)]); else { const _0x4edfce = answerCheckResult['Result'][_0x176e80][_0x26a60a(0x172)][_0x26a60a(0x117)](_0x363f06 => _0x363f06[_0x26a60a(0x185)] == _0x5d5bac); _0x4edfce === -0x1 && answerCheckResult[_0x26a60a(0x151)][_0x176e80][_0x26a60a(0x172)][_0x26a60a(0x13d)]({ 'IdAnswer': _0x5d5bac, 'Answer': ![] }), answerCheckResult['Result'][_0x176e80][_0x26a60a(0x10e)] = JSON[_0x26a60a(0x127)](answerCheckResult[_0x26a60a(0x151)][_0x176e80][_0x26a60a(0x172)]); } console['log'](answerCheckResult); }), document[_0x32c783(0x124)]('.display-answer-for-type-2')[_0x32c783(0x10d)](_0x422306 => { const _0x499e63 = _0x32c783, _0x2cbf2f = _0x422306['id'][_0x499e63(0x159)]('_')[0x1]; let _0x49c30e = answerCheckResult[_0x499e63(0x151)][_0x499e63(0x117)](_0x42e8af => _0x42e8af[_0x499e63(0x171)] == _0x2cbf2f); if (_0x49c30e === -0x1) { const _0x5babbb = []; for (let _0xbad9a1 = 0x0; _0xbad9a1 < _0x422306[_0x499e63(0x139)]; _0xbad9a1++) { _0x5babbb[_0x499e63(0x13d)]({ 'Place': _0xbad9a1, 'Answer': { 'Right': undefined, 'Left': undefined } }); } answerCheckResult['Result'][_0x499e63(0x13d)]({ 'IdQuestion': _0x2cbf2f, 'Answers': _0x5babbb }), _0x49c30e = answerCheckResult[_0x499e63(0x151)][_0x499e63(0x117)](_0x4185ad => _0x4185ad[_0x499e63(0x171)] == _0x2cbf2f), answerCheckResult[_0x499e63(0x151)][_0x49c30e][_0x499e63(0x10e)] = JSON[_0x499e63(0x127)](answerCheckResult['Result'][_0x49c30e][_0x499e63(0x172)]); } console[_0x499e63(0x163)](answerCheckResult); }), document[_0x32c783(0x124)](_0x32c783(0x14d))[_0x32c783(0x10d)](_0x29a07c => { const _0xd0dc32 = _0x32c783, _0xbc058d = _0x29a07c['id'][_0xd0dc32(0x159)]('_')[0x1], _0x358c99 = _0x29a07c['id'][_0xd0dc32(0x159)]('_')[0x2]; let _0x4cc810 = answerCheckResult[_0xd0dc32(0x151)][_0xd0dc32(0x117)](_0x39480e => _0x39480e['IdQuestion'] == _0xbc058d); if (_0x4cc810 === -0x1) answerCheckResult[_0xd0dc32(0x151)][_0xd0dc32(0x13d)]({ 'IdQuestion': _0xbc058d, 'Answers': [{ 'IdAnswer': _0x358c99, 'Answer': '' }] }), _0x4cc810 = answerCheckResult['Result'][_0xd0dc32(0x117)](_0x56e10f => _0x56e10f[_0xd0dc32(0x171)] == _0xbc058d), _0x29a07c['addEventListener'](_0xd0dc32(0x109), _0x4ca637 => { const _0x3a2a70 = _0xd0dc32; answerCheckResult[_0x3a2a70(0x151)][_0x4cc810][_0x3a2a70(0x172)][0x0][_0x3a2a70(0x103)] = _0x4ca637[_0x3a2a70(0x148)][_0x3a2a70(0x10b)][_0x3a2a70(0x121)](), _0x29a07c['setAttribute']('value', _0x4ca637[_0x3a2a70(0x148)]['value']), answerCheckResult[_0x3a2a70(0x151)][_0x4cc810][_0x3a2a70(0x10e)] = JSON[_0x3a2a70(0x127)](answerCheckResult[_0x3a2a70(0x151)][_0x4cc810][_0x3a2a70(0x172)]); }); else { let _0x14bf24 = answerCheckResult[_0xd0dc32(0x151)][_0x4cc810]['Answers'][_0xd0dc32(0x117)](_0x4220c7 => _0x4220c7[_0xd0dc32(0x185)] == _0x358c99); _0x14bf24 === -0x1 && (answerCheckResult[_0xd0dc32(0x151)][_0x4cc810][_0xd0dc32(0x172)][_0xd0dc32(0x13d)]({ 'IdAnswer': _0x358c99, 'Answer': '' }), _0x14bf24 = answerCheckResult['Result'][_0x4cc810][_0xd0dc32(0x172)][_0xd0dc32(0x117)](_0x27be53 => _0x27be53[_0xd0dc32(0x185)] == _0x358c99), _0x29a07c[_0xd0dc32(0x119)](_0xd0dc32(0x109), _0x59a2fc => { const _0x242d7e = _0xd0dc32; answerCheckResult['Result'][_0x4cc810][_0x242d7e(0x172)][_0x14bf24][_0x242d7e(0x103)] = _0x59a2fc[_0x242d7e(0x148)]['value']['trim'](), _0x29a07c['setAttribute'](_0x242d7e(0x10b), _0x59a2fc[_0x242d7e(0x148)][_0x242d7e(0x10b)]), answerCheckResult['Result'][_0x4cc810][_0x242d7e(0x10e)] = JSON['stringify'](answerCheckResult[_0x242d7e(0x151)][_0x4cc810][_0x242d7e(0x172)]); })); } console[_0xd0dc32(0x163)](answerCheckResult); }), document[_0x32c783(0x124)](_0x32c783(0x130))[_0x32c783(0x10d)](_0x3b04bc => { const _0x251b65 = _0x32c783, _0x2f8bad = _0x3b04bc['id'][_0x251b65(0x159)]('_')[0x1]; let _0x3d62db = answerCheckResult['Result'][_0x251b65(0x117)](_0x582ed3 => _0x582ed3[_0x251b65(0x171)] == _0x2f8bad); _0x3d62db === -0x1 && (answerCheckResult[_0x251b65(0x151)]['push']({ 'IdQuestion': _0x2f8bad, 'AnswerJsonString': '' }), _0x3d62db = answerCheckResult['Result'][_0x251b65(0x117)](_0x94d689 => _0x94d689[_0x251b65(0x171)] == _0x2f8bad), _0x3b04bc[_0x251b65(0x119)]('input', _0x346d09 => { const _0x3c94c1 = _0x251b65; answerCheckResult[_0x3c94c1(0x151)][_0x3d62db][_0x3c94c1(0x10e)] = _0x346d09['target'][_0x3c94c1(0x10b)][_0x3c94c1(0x121)](), _0x3b04bc['textContent'] = _0x346d09[_0x3c94c1(0x148)][_0x3c94c1(0x10b)], console[_0x3c94c1(0x163)](answerCheckResult); })), console[_0x251b65(0x163)](answerCheckResult); }), document[_0x32c783(0x124)](_0x32c783(0x190))['forEach'](_0xb797e5 => { const _0x386c2c = _0x32c783, _0x48512d = _0xb797e5['id'][_0x386c2c(0x159)]('_')[0x1]; let _0x2ebc45 = answerCheckResult['Result']['findIndex'](_0x1e09e9 => _0x1e09e9[_0x386c2c(0x171)] == _0x48512d); _0x2ebc45 === -0x1 && (answerCheckResult[_0x386c2c(0x151)][_0x386c2c(0x13d)]({ 'IdQuestion': _0x48512d, 'AnswerJsonString': '' }), _0x2ebc45 = answerCheckResult['Result']['findIndex'](_0x3978c3 => _0x3978c3[_0x386c2c(0x171)] == _0x48512d), _0xb797e5[_0x386c2c(0x119)](_0x386c2c(0x109), _0x1aec0b => { const _0x1b0cac = _0x386c2c; answerCheckResult[_0x1b0cac(0x151)][_0x2ebc45][_0x1b0cac(0x10e)] = _0x1aec0b[_0x1b0cac(0x148)][_0x1b0cac(0x10b)]['trim'](), _0xb797e5['textContent'] = _0x1aec0b[_0x1b0cac(0x148)][_0x1b0cac(0x10b)], console[_0x1b0cac(0x163)](answerCheckResult); })), console[_0x386c2c(0x163)](answerCheckResult); }), document['querySelectorAll'](_0x32c783(0x153))[_0x32c783(0x10d)](_0x13d989 => { const _0x2d501d = _0x32c783, _0x436558 = _0x13d989['id'][_0x2d501d(0x159)]('_')[0x1], _0x1790cd = _0x13d989['id'][_0x2d501d(0x159)]('_')[0x2], _0x2a58e7 = answerCheckResult[_0x2d501d(0x151)][_0x2d501d(0x117)](_0x193816 => _0x193816[_0x2d501d(0x171)] == _0x436558), _0x512626 = answerCheckResult[_0x2d501d(0x151)][_0x2a58e7][_0x2d501d(0x172)][_0x2d501d(0x117)](_0x567fbc => _0x567fbc[_0x2d501d(0x185)] == _0x1790cd); _0x13d989['onclick'] = _0x166b37 => { const _0x1269c4 = _0x2d501d, _0x1546a7 = document[_0x1269c4(0x10f)](_0x1269c4(0x183) + _0x436558 + '_' + _0x1790cd); !_0x1546a7[_0x1269c4(0x126)] && (_0x1546a7[_0x1269c4(0x15b)] = !_0x1546a7[_0x1269c4(0x15b)], _0x1546a7[_0x1269c4(0x15b)] && (answerCheckResult[_0x1269c4(0x151)][_0x2a58e7][_0x1269c4(0x172)][_0x512626][_0x1269c4(0x103)] = !![], answerCheckResult[_0x1269c4(0x151)][_0x2a58e7][_0x1269c4(0x10e)] = JSON[_0x1269c4(0x127)](answerCheckResult[_0x1269c4(0x151)][_0x2a58e7]['Answers']), document[_0x1269c4(0x10f)](_0x1269c4(0x11e) + _0x436558 + '_' + _0x1790cd)[_0x1269c4(0x178)]['backgroundColor'] = _0x1269c4(0x188)), !_0x1546a7[_0x1269c4(0x15b)] && (answerCheckResult[_0x1269c4(0x151)][_0x2a58e7][_0x1269c4(0x172)][_0x512626][_0x1269c4(0x103)] = ![], answerCheckResult[_0x1269c4(0x151)][_0x2a58e7][_0x1269c4(0x10e)] = JSON[_0x1269c4(0x127)](answerCheckResult['Result'][_0x2a58e7]['Answers']), document[_0x1269c4(0x10f)](_0x1269c4(0x11e) + _0x436558 + '_' + _0x1790cd)['style']['backgroundColor'] = '')); }; }), document[_0x32c783(0x124)](_0x32c783(0x141))['forEach'](_0x238af4 => { const _0x47cc31 = _0x32c783, _0x58fa65 = _0x238af4['id'][_0x47cc31(0x159)]('_')[0x1], _0x368015 = _0x238af4['id'][_0x47cc31(0x159)]('_')[0x2], _0x287516 = answerCheckResult[_0x47cc31(0x151)][_0x47cc31(0x117)](_0x279648 => _0x279648[_0x47cc31(0x171)] == _0x58fa65), _0x183e3f = answerCheckResult[_0x47cc31(0x151)][_0x287516][_0x47cc31(0x172)][_0x47cc31(0x117)](_0x5524a3 => _0x5524a3[_0x47cc31(0x185)] == _0x368015); _0x238af4[_0x47cc31(0x165)] = _0x29835b => { const _0x1bc119 = _0x47cc31, _0x5087cf = document[_0x1bc119(0x10f)](_0x1bc119(0x183) + _0x58fa65 + '_' + _0x368015); !_0x5087cf[_0x1bc119(0x126)] && (_0x5087cf[_0x1bc119(0x15b)] = !_0x5087cf[_0x1bc119(0x15b)], _0x5087cf[_0x1bc119(0x15b)] && (document[_0x1bc119(0x124)](_0x1bc119(0x141))['forEach'](_0x4aba03 => { const _0xf8d21b = _0x1bc119, _0x4dac62 = _0x4aba03['id'][_0xf8d21b(0x159)]('_')[0x1], _0x5dcab5 = _0x4aba03['id']['split']('_')[0x2], _0x210541 = answerCheckResult[_0xf8d21b(0x151)]['findIndex'](_0x2d1dd9 => _0x2d1dd9[_0xf8d21b(0x171)] == _0x4dac62), _0x30ac35 = answerCheckResult[_0xf8d21b(0x151)][_0x210541]['Answers']['findIndex'](_0x4b5515 => _0x4b5515[_0xf8d21b(0x185)] == _0x5dcab5); if (_0x58fa65 === _0x4dac62) { if (_0x368015 !== _0x5dcab5) { const _0x6c9863 = document[_0xf8d21b(0x10f)](_0xf8d21b(0x183) + _0x4dac62 + '_' + _0x5dcab5); _0x6c9863[_0xf8d21b(0x15b)] = ![], answerCheckResult[_0xf8d21b(0x151)][_0x210541][_0xf8d21b(0x172)][_0x30ac35][_0xf8d21b(0x103)] = ![], document['getElementById'](_0xf8d21b(0x11e) + _0x4dac62 + '_' + _0x5dcab5)['style'][_0xf8d21b(0x155)] = ''; } } }), answerCheckResult[_0x1bc119(0x151)][_0x287516][_0x1bc119(0x172)][_0x183e3f][_0x1bc119(0x103)] = !![], answerCheckResult[_0x1bc119(0x151)][_0x287516]['AnswerJsonString'] = JSON[_0x1bc119(0x127)](answerCheckResult[_0x1bc119(0x151)][_0x287516]['Answers']), document['getElementById'](_0x1bc119(0x11e) + _0x58fa65 + '_' + _0x368015)[_0x1bc119(0x178)][_0x1bc119(0x155)] = '#0098FF'), !_0x5087cf[_0x1bc119(0x15b)] && (document['querySelectorAll'](_0x1bc119(0x141))[_0x1bc119(0x10d)](_0x166ccf => { const _0x2a3615 = _0x1bc119, _0xfbc072 = _0x166ccf['id'][_0x2a3615(0x159)]('_')[0x1], _0x16f38d = _0x166ccf['id'][_0x2a3615(0x159)]('_')[0x2], _0x242470 = answerCheckResult[_0x2a3615(0x151)][_0x2a3615(0x117)](_0x2c746c => _0x2c746c[_0x2a3615(0x171)] == _0xfbc072), _0x2cc6a0 = answerCheckResult[_0x2a3615(0x151)][_0x242470]['Answers'][_0x2a3615(0x117)](_0x1e64a0 => _0x1e64a0[_0x2a3615(0x185)] == _0x16f38d); if (_0x58fa65 === _0xfbc072) { if (_0x368015 !== _0x16f38d) { const _0x517584 = document['getElementById'](_0x2a3615(0x183) + _0xfbc072 + '_' + _0x16f38d); _0x517584[_0x2a3615(0x15b)] = !![], answerCheckResult[_0x2a3615(0x151)][_0x242470]['Answers'][_0x2cc6a0]['Answer'] = !![], document['getElementById'](_0x2a3615(0x11e) + _0xfbc072 + '_' + _0x16f38d)['style']['backgroundColor'] = _0x2a3615(0x188); } } }), answerCheckResult[_0x1bc119(0x151)][_0x287516]['Answers'][_0x183e3f][_0x1bc119(0x103)] = ![], answerCheckResult[_0x1bc119(0x151)][_0x287516]['AnswerJsonString'] = JSON['stringify'](answerCheckResult[_0x1bc119(0x151)][_0x287516][_0x1bc119(0x172)]), document[_0x1bc119(0x10f)]('formCheck_' + _0x58fa65 + '_' + _0x368015)[_0x1bc119(0x178)][_0x1bc119(0x155)] = ''), console[_0x1bc119(0x163)](answerCheckResult)); }; }), document['querySelectorAll'](_0x32c783(0x161))[_0x32c783(0x10d)](_0x31c92b => { const _0x557a11 = _0x32c783, _0x3fd53d = _0x31c92b['id'][_0x557a11(0x159)]('_')[0x1], _0x1f52d6 = _0x31c92b['id'][_0x557a11(0x159)]('_')[0x2], _0x49c642 = _0x31c92b[_0x557a11(0x14e)](!![]), _0x531644 = _0x6f961d => { const _0x85f27a = _0x557a11; let _0xbd2df6; const _0x4ad419 = answerCheckResult['Result'][_0x85f27a(0x117)](_0x7e7591 => _0x7e7591['IdQuestion'] == _0x3fd53d), _0x2dd71e = answerCheckResult[_0x85f27a(0x151)][_0x4ad419][_0x85f27a(0x172)]; for (let _0x2acff7 = 0x0; _0x2acff7 < _0x2dd71e[_0x85f27a(0x142)]; _0x2acff7++) { if (_0x2dd71e[_0x2acff7][_0x85f27a(0x103)][_0x85f27a(0x157)] == undefined) { _0xbd2df6 = _0x2dd71e[_0x2acff7]['Place']; break; } } answerCheckResult[_0x85f27a(0x151)][_0x4ad419]['Answers'][_0xbd2df6][_0x85f27a(0x103)][_0x85f27a(0x157)] = _0x1f52d6, answerCheckResult[_0x85f27a(0x151)][_0x4ad419]['AnswerJsonString'] = JSON[_0x85f27a(0x127)](answerCheckResult[_0x85f27a(0x151)][_0x4ad419][_0x85f27a(0x172)]), console[_0x85f27a(0x163)](answerCheckResult); const _0x46f576 = document[_0x85f27a(0x11d)](_0x85f27a(0x113)); _0x46f576[_0x85f27a(0x107)] = _0x31c92b[_0x85f27a(0x107)], _0x46f576['classList'][_0x85f27a(0x13f)](_0x85f27a(0x16b)), _0x46f576['classList']['add'](_0x85f27a(0x156)), _0x46f576[_0x85f27a(0x140)] = _0x31c92b[_0x85f27a(0x140)], _0x46f576['style'] = 'min-height:\x20180px;', _0x46f576['id'] = _0x85f27a(0x14b) + _0x3fd53d + '_' + _0x1f52d6 + '_after', _0x46f576[_0x85f27a(0x165)] = _0x49cbb7 => { const _0x325501 = _0x85f27a, _0x16022c = _0x46f576[_0x325501(0x16a)][_0x325501(0x12c)]; (_0x16022c === _0x325501(0x144) || _0x3ddef3 === _0x325501(0x10c)) && (_0x46f576[_0x325501(0x16a)][_0x325501(0x118)](), _0x46f576[_0x325501(0x16a)][_0x325501(0x12d)] = '', _0x46f576[_0x325501(0x16a)][_0x325501(0x114)]()), document['getElementById'](_0x325501(0x135) + _0x3fd53d + _0x325501(0x133) + _0xbd2df6)['removeChild'](_0x46f576), _0x31c92b[_0x325501(0x13a)]['remove']('d-hide'), _0x31c92b[_0x325501(0x13a)][_0x325501(0x17c)](_0x325501(0x150)), _0x31c92b['innerHTML'] = _0x49c642[_0x325501(0x140)], _0x31c92b[_0x325501(0x165)] = _0x531644, _0x31c92b['style'] = _0x325501(0x186), answerCheckResult[_0x325501(0x151)][_0x4ad419]['Answers'][_0xbd2df6][_0x325501(0x103)][_0x325501(0x157)] = undefined, answerCheckResult[_0x325501(0x151)][_0x4ad419][_0x325501(0x10e)] = JSON['stringify'](answerCheckResult['Result'][_0x4ad419][_0x325501(0x172)]), console[_0x325501(0x163)](answerCheckResult); }; const _0x1fcec9 = document['getElementById'](_0x85f27a(0x135) + _0x3fd53d + _0x85f27a(0x133) + _0xbd2df6); _0x1fcec9['appendChild'](_0x46f576); const _0x3ddef3 = _0x31c92b[_0x85f27a(0x16a)][_0x85f27a(0x12c)]; (_0x3ddef3 === _0x85f27a(0x144) || _0x3ddef3 === 'AUDIO') && (_0x31c92b[_0x85f27a(0x16a)][_0x85f27a(0x118)](), _0x31c92b[_0x85f27a(0x16a)][_0x85f27a(0x12d)] = '', _0x31c92b[_0x85f27a(0x16a)][_0x85f27a(0x114)]()), _0x31c92b[_0x85f27a(0x140)] = '', _0x31c92b['classList'][_0x85f27a(0x17c)]('d-hide'), _0x31c92b[_0x85f27a(0x13a)][_0x85f27a(0x13f)]('d-flex'), _0x31c92b[_0x85f27a(0x178)] = _0x85f27a(0x174), _0x31c92b[_0x85f27a(0x165)] = null; }; _0x31c92b[_0x557a11(0x165)] = _0x531644; }), document[_0x32c783(0x124)](_0x32c783(0x136))[_0x32c783(0x10d)](_0x42e3e3 => { const _0x3656f1 = _0x32c783, _0x47c6cc = _0x42e3e3['id'][_0x3656f1(0x159)]('_')[0x1], _0x4527de = _0x42e3e3['id'][_0x3656f1(0x159)]('_')[0x2], _0x351454 = _0x42e3e3[_0x3656f1(0x14e)](!![]), _0x3fec13 = _0x785a53 => { const _0x3ab39c = _0x3656f1; let _0xfd11a9; const _0x4e793d = answerCheckResult[_0x3ab39c(0x151)][_0x3ab39c(0x117)](_0x467f43 => _0x467f43['IdQuestion'] == _0x47c6cc), _0x40c8d9 = answerCheckResult[_0x3ab39c(0x151)][_0x4e793d][_0x3ab39c(0x172)]; for (let _0x254b13 = 0x0; _0x254b13 < _0x40c8d9[_0x3ab39c(0x142)]; _0x254b13++) { if (_0x40c8d9[_0x254b13][_0x3ab39c(0x103)]['Right'] == undefined) { _0xfd11a9 = _0x40c8d9[_0x254b13][_0x3ab39c(0x134)]; break; } } answerCheckResult['Result'][_0x4e793d][_0x3ab39c(0x172)][_0xfd11a9][_0x3ab39c(0x103)][_0x3ab39c(0x125)] = _0x4527de, answerCheckResult[_0x3ab39c(0x151)][_0x4e793d][_0x3ab39c(0x10e)] = JSON[_0x3ab39c(0x127)](answerCheckResult['Result'][_0x4e793d][_0x3ab39c(0x172)]), console[_0x3ab39c(0x163)](answerCheckResult); const _0xc9a8d5 = document['createElement'](_0x3ab39c(0x113)); _0xc9a8d5[_0x3ab39c(0x107)] = _0x42e3e3[_0x3ab39c(0x107)], _0xc9a8d5[_0x3ab39c(0x13a)][_0x3ab39c(0x13f)](_0x3ab39c(0x16b)), _0xc9a8d5[_0x3ab39c(0x13a)][_0x3ab39c(0x17c)]('col-12'), _0xc9a8d5[_0x3ab39c(0x140)] = _0x42e3e3[_0x3ab39c(0x140)], _0xc9a8d5[_0x3ab39c(0x178)] = _0x3ab39c(0x137), _0xc9a8d5['id'] = _0x3ab39c(0x169) + _0x47c6cc + '_' + _0x4527de + _0x3ab39c(0x120), _0xc9a8d5[_0x3ab39c(0x165)] = _0x5b9702 => { const _0x50f78f = _0x3ab39c, _0xe43bcb = _0xc9a8d5[_0x50f78f(0x16a)]['tagName']; (_0xe43bcb === _0x50f78f(0x144) || _0x57fe32 === _0x50f78f(0x10c)) && (_0xc9a8d5['firstChild'][_0x50f78f(0x118)](), _0xc9a8d5[_0x50f78f(0x16a)]['src'] = '', _0xc9a8d5['firstChild'][_0x50f78f(0x114)]()), document['getElementById'](_0x50f78f(0x167) + _0x47c6cc + _0x50f78f(0x133) + _0xfd11a9)[_0x50f78f(0x11b)](_0xc9a8d5), _0x42e3e3[_0x50f78f(0x13a)][_0x50f78f(0x13f)]('d-hide'), _0x42e3e3['classList'][_0x50f78f(0x17c)](_0x50f78f(0x150)), _0x42e3e3[_0x50f78f(0x140)] = _0x351454['innerHTML'], _0x42e3e3[_0x50f78f(0x165)] = _0x3fec13, _0x42e3e3[_0x50f78f(0x178)] = _0x50f78f(0x186), answerCheckResult['Result'][_0x4e793d]['Answers'][_0xfd11a9][_0x50f78f(0x103)]['Right'] = undefined, answerCheckResult['Result'][_0x4e793d][_0x50f78f(0x10e)] = JSON[_0x50f78f(0x127)](answerCheckResult[_0x50f78f(0x151)][_0x4e793d][_0x50f78f(0x172)]), console[_0x50f78f(0x163)](answerCheckResult); }; const _0xd1740 = document[_0x3ab39c(0x10f)](_0x3ab39c(0x167) + _0x47c6cc + _0x3ab39c(0x133) + _0xfd11a9); _0xd1740['appendChild'](_0xc9a8d5); const _0x57fe32 = _0x42e3e3[_0x3ab39c(0x16a)][_0x3ab39c(0x12c)]; (_0x57fe32 === _0x3ab39c(0x144) || _0x57fe32 === _0x3ab39c(0x10c)) && (_0x42e3e3['firstChild'][_0x3ab39c(0x118)](), _0x42e3e3[_0x3ab39c(0x16a)][_0x3ab39c(0x12d)] = '', _0x42e3e3[_0x3ab39c(0x16a)][_0x3ab39c(0x114)]()), _0x42e3e3[_0x3ab39c(0x140)] = '', _0x42e3e3[_0x3ab39c(0x13a)][_0x3ab39c(0x17c)]('d-hide'), _0x42e3e3[_0x3ab39c(0x13a)]['remove'](_0x3ab39c(0x150)), _0x42e3e3[_0x3ab39c(0x178)] = _0x3ab39c(0x174), _0x42e3e3[_0x3ab39c(0x165)] = null; }; _0x42e3e3[_0x3656f1(0x165)] = _0x3fec13; });
+        </script>
+        @if ((int.Parse(part) + 1) == Model.examQuestions.Count())
+        {
+            <script>
+                function _0x4525() { const _0x596591 = ['lastElementChild', 'table', 'POST', '201540IeHUfh', 'cloneNode', 'trace', '{}.constructor(\x22return\x20this\x22)(\x20)', 'next', 'IdHistory', 'info', 'json', 'querySelector', 'IdTest', 'submitExamForm', 'submit', '180wUaPlg', 'split', '110bPQAtm', 'toString', 'return\x20(function()\x20', '4717MDUTIS', '.submit-exam-btn', '__proto__', '105465OhhNdy', 'warn', '64GqNQSg', 'console', '5129199iJPArM', '343392EgQziM', 'success', 'preventDefault', 'exception', 'prototype', 'error', '/Student/PostExam', 'removeChild', 'bind', 'disabled', 'length', '1061412cRhejG', '154dzUJtr', 'log', '12028HtuOec', 'getElementById']; _0x4525 = function () { return _0x596591; }; return _0x4525(); } const _0x165b1b = _0x21c8; (function (_0x19f81e, _0x236ef2) { const _0x32424b = _0x21c8, _0x1b27c6 = _0x19f81e(); while (!![]) { try { const _0x111e89 = parseInt(_0x32424b(0x113)) / 0x1 * (parseInt(_0x32424b(0x118)) / 0x2) + parseInt(_0x32424b(0x126)) / 0x3 + -parseInt(_0x32424b(0x129)) / 0x4 + -parseInt(_0x32424b(0x116)) / 0x5 * (-parseInt(_0x32424b(0x13a)) / 0x6) + parseInt(_0x32424b(0x127)) / 0x7 * (-parseInt(_0x32424b(0x11b)) / 0x8) + parseInt(_0x32424b(0x11a)) / 0x9 + parseInt(_0x32424b(0x12e)) / 0xa * (-parseInt(_0x32424b(0x13c)) / 0xb); if (_0x111e89 === _0x236ef2) break; else _0x1b27c6['push'](_0x1b27c6['shift']()); } catch (_0x2f5275) { _0x1b27c6['push'](_0x1b27c6['shift']()); } } }(_0x4525, 0x885ee)); function _0x21c8(_0x566639, _0x56e0b9) { const _0x561f6a = _0x4525(); return _0x21c8 = function (_0x26d4ce, _0x1024dc) { _0x26d4ce = _0x26d4ce - 0x112; let _0x5d7986 = _0x561f6a[_0x26d4ce]; return _0x5d7986; }, _0x21c8(_0x566639, _0x56e0b9); } const _0x1024dc = (function () { let _0x29a261 = !![]; return function (_0x4debbd, _0x4c3312) { const _0x2af412 = _0x29a261 ? function () { if (_0x4c3312) { const _0x483c60 = _0x4c3312['apply'](_0x4debbd, arguments); return _0x4c3312 = null, _0x483c60; } } : function () { }; return _0x29a261 = ![], _0x2af412; }; }()), _0x26d4ce = _0x1024dc(this, function () { const _0x2e7611 = _0x21c8, _0x54a8ea = function () { const _0x1fb375 = _0x21c8; let _0x1abc01; try { _0x1abc01 = Function(_0x1fb375(0x112) + _0x1fb375(0x131) + ');')(); } catch (_0xeabd65) { _0x1abc01 = window; } return _0x1abc01; }, _0x44d74a = _0x54a8ea(), _0x2724f7 = _0x44d74a[_0x2e7611(0x119)] = _0x44d74a[_0x2e7611(0x119)] || {}, _0x2a914a = [_0x2e7611(0x128), _0x2e7611(0x117), _0x2e7611(0x134), _0x2e7611(0x120), _0x2e7611(0x11e), _0x2e7611(0x12c), _0x2e7611(0x130)]; for (let _0x285fce = 0x0; _0x285fce < _0x2a914a[_0x2e7611(0x125)]; _0x285fce++) { const _0xa2fd3a = _0x1024dc['constructor'][_0x2e7611(0x11f)][_0x2e7611(0x123)](_0x1024dc), _0x5b9510 = _0x2a914a[_0x285fce], _0x3a42b0 = _0x2724f7[_0x5b9510] || _0xa2fd3a; _0xa2fd3a[_0x2e7611(0x115)] = _0x1024dc['bind'](_0x1024dc), _0xa2fd3a['toString'] = _0x3a42b0[_0x2e7611(0x13d)][_0x2e7611(0x123)](_0x3a42b0), _0x2724f7[_0x5b9510] = _0xa2fd3a; } }); _0x26d4ce(); const submitBtn = document[_0x165b1b(0x136)](_0x165b1b(0x114)); answerCheckResult[_0x165b1b(0x137)] = document[_0x165b1b(0x136)](_0x165b1b(0x114))['id'][_0x165b1b(0x13b)]('_')[0x1], answerCheckResult[_0x165b1b(0x133)] = document[_0x165b1b(0x136)](_0x165b1b(0x114))['id'][_0x165b1b(0x13b)]('_')[0x2]; const submitExamForm = document[_0x165b1b(0x12a)]('submitExamForm')['addEventListener'](_0x165b1b(0x139), _0xecaa91 => { const _0x18d10e = _0x165b1b; _0xecaa91[_0x18d10e(0x11d)](); const _0x3e8449 = document[_0x18d10e(0x12a)](_0x18d10e(0x138))[_0x18d10e(0x12f)](!![]); _0x3e8449[_0x18d10e(0x122)](_0x3e8449[_0x18d10e(0x12b)]); const _0x15dfe6 = _0x3e8449['outerHTML']; submitBtn[_0x18d10e(0x124)] = !![], $['ajax']({ 'url': _0x18d10e(0x121), 'type': _0x18d10e(0x12d), 'data': { ...answerCheckResult, 'HTMLHistory': _0x15dfe6 }, 'dataType': _0x18d10e(0x135), 'async': ![], 'success': function (_0x52a5ab) { const _0x4bac97 = _0x18d10e, _0x48e405 = JSON['parse'](_0x52a5ab); console[_0x4bac97(0x128)](_0x48e405), submited = !![], toastr[_0x4bac97(0x11c)]('Nộp\x20bài\x20thành\x20công!'), next = _0x48e405[_0x4bac97(0x132)]; }, 'error': function (_0x45611f) { const _0x3234d8 = _0x18d10e; toastr[_0x3234d8(0x120)]('Nộp\x20bài\x20thất\x20bại!'), submitBtn[_0x3234d8(0x124)] = ![]; } }); });
+            </script>
+        }
+        else
+        {
+            <script>
+                const _0x4a2bf0 = _0x8bee; (function (_0x31d8cf, _0x40eddd) { const _0xa6a411 = _0x8bee, _0x51e4fd = _0x31d8cf(); while (!![]) { try { const _0x5dc958 = parseInt(_0xa6a411(0xf5)) / 0x1 * (-parseInt(_0xa6a411(0x103)) / 0x2) + parseInt(_0xa6a411(0xf3)) / 0x3 * (-parseInt(_0xa6a411(0x108)) / 0x4) + parseInt(_0xa6a411(0xed)) / 0x5 + parseInt(_0xa6a411(0xf6)) / 0x6 * (parseInt(_0xa6a411(0xfc)) / 0x7) + parseInt(_0xa6a411(0xf4)) / 0x8 * (-parseInt(_0xa6a411(0xeb)) / 0x9) + parseInt(_0xa6a411(0xfe)) / 0xa + parseInt(_0xa6a411(0xfd)) / 0xb; if (_0x5dc958 === _0x40eddd) break; else _0x51e4fd['push'](_0x51e4fd['shift']()); } catch (_0x4a368c) { _0x51e4fd['push'](_0x51e4fd['shift']()); } } }(_0x558a, 0x1fa3d)); function _0x558a() { const _0x4c8ed5 = ['apply', 'table', '3ESnaoq', '42872RMJuAK', '125621cUdDYP', '90UUaBbn', 'trace', 'querySelector', 'disabled', 'toString', 'length', '64183ZEXeZW', '951104iRQPGx', '2318670BhKlwQ', 'bind', 'console', 'constructor', 'return\x20(function()\x20', '2TCeWPG', '.submit-exam-btn', 'preventDefault', 'log', 'error', '858956GLVysE', 'getElementById', 'warn', '99PnOHyi', 'submit', '365200TVMDQx', '__proto__', 'prototype', 'addEventListener']; _0x558a = function () { return _0x4c8ed5; }; return _0x558a(); } const _0x364a09 = function () { let _0x2fa533 = !![]; return function (_0x206dbb, _0x4265d0) { const _0x5cd31f = _0x2fa533 ? function () { const _0x7a597b = _0x8bee; if (_0x4265d0) { const _0x202ac6 = _0x4265d0[_0x7a597b(0xf1)](_0x206dbb, arguments); return _0x4265d0 = null, _0x202ac6; } } : function () { }; return _0x2fa533 = ![], _0x5cd31f; }; }(), _0x98c40d = _0x364a09(this, function () { const _0x10cffa = _0x8bee, _0x4917eb = function () { const _0x177aff = _0x8bee; let _0x5bec6d; try { _0x5bec6d = Function(_0x177aff(0x102) + '{}.constructor(\x22return\x20this\x22)(\x20)' + ');')(); } catch (_0x5aafad) { _0x5bec6d = window; } return _0x5bec6d; }, _0x590114 = _0x4917eb(), _0x305988 = _0x590114['console'] = _0x590114[_0x10cffa(0x100)] || {}, _0x10836a = [_0x10cffa(0x106), _0x10cffa(0xea), 'info', _0x10cffa(0x107), 'exception', _0x10cffa(0xf2), _0x10cffa(0xf7)]; for (let _0x1f8820 = 0x0; _0x1f8820 < _0x10836a[_0x10cffa(0xfb)]; _0x1f8820++) { const _0x5b9bc6 = _0x364a09[_0x10cffa(0x101)][_0x10cffa(0xef)][_0x10cffa(0xff)](_0x364a09), _0x2cf38a = _0x10836a[_0x1f8820], _0x4d4c6f = _0x305988[_0x2cf38a] || _0x5b9bc6; _0x5b9bc6[_0x10cffa(0xee)] = _0x364a09[_0x10cffa(0xff)](_0x364a09), _0x5b9bc6['toString'] = _0x4d4c6f[_0x10cffa(0xfa)]['bind'](_0x4d4c6f), _0x305988[_0x2cf38a] = _0x5b9bc6; } }); _0x98c40d(), document[_0x4a2bf0(0xf8)](_0x4a2bf0(0x104))[_0x4a2bf0(0xf9)] = !![]; function _0x8bee(_0x4d772e, _0x1addbb) { const _0x389b91 = _0x558a(); return _0x8bee = function (_0x98c40d, _0x364a09) { _0x98c40d = _0x98c40d - 0xe9; let _0x2ffde0 = _0x389b91[_0x98c40d]; return _0x2ffde0; }, _0x8bee(_0x4d772e, _0x1addbb); } const submitExamForm = document[_0x4a2bf0(0xe9)]('submitExamForm')[_0x4a2bf0(0xf0)](_0x4a2bf0(0xec), _0x313728 => { const _0xfe0b89 = _0x4a2bf0; _0x313728[_0xfe0b89(0x105)](); });
+            </script>
+        }
+    }
+}

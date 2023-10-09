@@ -1,0 +1,30 @@
+﻿@model IEnumerable<ExpertransDaoTao.ViewModel.StudentCourseViewModel>
+<table class="table table-head-fixed">
+    <thead>
+        <tr>
+            <th>STT</th>
+            <th>Mã học viên</th>
+            <th>Tên học viên</th>
+            <th>Lớp</th>
+            <th>Email</th>
+            <th>Số điện thoại</th>
+            <th>Thao tác</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var obj in Model)
+        {
+            <tr>
+                <td>@obj.Id</td>
+                <td>@obj.UserName</td>
+                <td>@obj.Name</td>
+                <td>@obj.CourseName</td>
+                <td><span class="tag tag-success">@obj.Email</span></td>
+                <td>@obj.Mobile</td>
+                <td>
+                    <button type="button" class="btn btn-primary student-add" id="student-@obj.Id">Chọn</button>
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>

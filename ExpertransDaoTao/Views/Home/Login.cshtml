@@ -1,0 +1,41 @@
+﻿@{
+    ViewData["Title"] = "Đăng Nhập";
+    var returnUrl = ViewData["ReturnUrl"] as string;
+    var error = TempData["Error"] as string;
+}
+<div class="login-page">
+    <div class="login-box">
+        <div class="login-logo">
+            <img class="img-fluid" src="~/template/dist/img/logo2.png" />
+        </div>
+        <!-- /.login-logo -->
+        <div class="card">
+            <div class="card-body login-card-body">
+                <p class="login-box-msg"></p>
+
+                <form action="/login?ReturnUrl=@System.Net.WebUtility.UrlEncode(returnUrl)" method="post">
+                    <div class="input-group mb-3">
+                        <input name="username" type="text" class="form-control" placeholder="Tên đăng nhập" required>
+                        <div class="input-group-append">
+                            <div class="input-group-text">
+                                <span class="fas fa-user"></span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="input-group mb-3">
+                        <input name="password" type="password" class="form-control" placeholder="Mật khẩu" required>
+                        <div class="input-group-append">
+                            <div class="input-group-text">
+                                <span class="fas fa-lock"></span>
+                            </div>
+                        </div>
+                    </div>
+                    @if (!string.IsNullOrEmpty(error))
+                    {<p class="text-danger">@error</p>}
+                    <button type="submit" class="btn btn-primary btn-block">Đăng nhập</button>
+                </form>
+            </div>
+            <!-- /.login-card-body -->
+        </div>
+    </div>
+</div>

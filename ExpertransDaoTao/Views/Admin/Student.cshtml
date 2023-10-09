@@ -1,0 +1,97 @@
+﻿@model IEnumerable<ExpertransDaoTao.ViewModel.StudentCourseViewModel>
+
+@{
+    Layout = "_LayoutAdmin";
+    ViewData["Title"] = "Quản lý học viên";
+    int stt = 1;
+}
+
+<!-- Content Header (Page header) -->
+<section class="content-header">
+    <div class="container-fluid">
+        <div class="row mb-2">
+            <div class="col-sm-6">
+                <h1>Danh sách học viên</h1>
+            </div>
+            <div class="col-sm-6">
+                <ol class="breadcrumb float-sm-right">
+                    <li class="breadcrumb-item"><a href="/admin">Trang chủ</a></li>
+                    <li class="breadcrumb-item active">Học viên</li>
+                </ol>
+            </div>
+        </div>
+    </div><!-- /.container-fluid -->
+</section>
+<div class="row">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header">
+                <div class="card-title">
+                </div>
+            </div>
+            <!-- /.card-header -->
+            <div class="card-body">
+                <table class="table table-head-fixed student-table">
+                    <thead>
+                        <tr>
+                            <th>STT</th>
+                            <th>Mã học viên</th>
+                            <th>Tên học viên</th>
+                            <th>Lớp</th>
+                            <th>Email</th>
+                            <th>Số điện thoại</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var obj in Model)
+                        {
+                        <tr>
+                            <td>@stt</td>
+                            <td>@obj.UserName</td>
+                            <td>@obj.Name</td>
+                            @if (!String.IsNullOrEmpty(obj.CourseName))
+                            {
+                                <td class="text-primary"><b>@obj.CourseName</b></td>
+
+                            }
+                            else
+                            {
+                                <td class="text-warning"><b>Không có dữ liệu</b></td>
+                            }
+                            <td><span class="tag tag-success">@obj.Email</span></td>
+                            <td>@obj.Mobile</td>
+                        </tr>  stt = stt + 1;                              
+                        }
+                    </tbody>
+                </table>
+            </div>
+            <!-- /.card-body -->
+        </div>
+        <!-- /.card -->
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        $(document).ready(function () {
+            //Static scroll bar
+            $("body").css("overflow", "scroll");
+            $('.student-table').DataTable({
+                responsive: true,
+                language: {
+                    emptyTable: "Không có học viên nào để hiển thị",
+                    info: "Hiển thị _START_ đến _END_ trong _TOTAL_ học viên",
+                    lengthMenu: "Hiển thị _MENU_ học viên",
+                    search: "Tìm kiếm:",
+                    paginate: {
+                        "first": "First",
+                        "last": "Last",
+                        "next": ">>",
+                        "previous": "<<"
+                    }
+                },
+                pageLength: 20
+            });
+        });
+    </script>   
+}

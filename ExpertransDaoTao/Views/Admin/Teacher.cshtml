@@ -1,0 +1,93 @@
+﻿@model IEnumerable<ExpertransDaoTao.ViewModel.TeacherCourseViewModel>
+
+@{
+    ViewData["Title"] = "Giảng viên";
+    Layout = "~/Views/Shared/_LayoutAdmin.cshtml";
+}
+
+<!-- Content Header (Page header) -->
+<section class="content-header">
+    <div class="container-fluid">
+        <div class="row mb-2">
+            <div class="col-sm-6">
+                <h1>Danh sách giảng viên</h1>
+            </div>
+            <div class="col-sm-6">
+                <ol class="breadcrumb float-sm-right">
+                    <li class="breadcrumb-item"><a href="/admin">Trang chủ</a></li>
+                    <li class="breadcrumb-item active">Giảng viên</li>
+                </ol>
+            </div>
+        </div>
+    </div><!-- /.container-fluid -->
+</section>
+<div class="row">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header">
+                <div class="card-title">
+                </div>
+            </div>
+            <!-- /.card-header -->
+            <div class="card-body">
+                <table class="table table-head-fixed teacher-table">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Mã giảng viên</th>
+                            <th>Tên giảng viên</th>
+                            <th>Lớp phụ trách</th>
+                            <th>Số điện thoại</th>
+                            <th>Email</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var obj in Model)
+                        {
+                        <tr>
+                            <td>@obj.Id</td>
+                            <td>@obj.UserName</td>
+                            <td>@obj.Name</td>
+                            @if (String.IsNullOrEmpty(obj.CourseName))
+                            {
+                                <td class="text-warning"><b>Không phụ trách</b></td>
+                            }
+                            else
+                            {
+                                <td class="text-primary"><b>@obj.CourseName</b></td>
+                            }
+                            <td>@obj.Mobile</td>
+                            <td><span class="tag tag-success">@obj.Email</span></td>
+                        </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+            <!-- /.card-body -->
+        </div>
+        <!-- /.card -->
+    </div>
+</div>
+
+@section Scripts{
+    <script>
+        $(document).ready(function () {
+            $('.teacher-table').DataTable({
+                responsive: true,
+                language: {
+                    emptyTable: "Không có giảng viên nào để hiển thị",
+                    info: "Hiển thị _START_ đến _END_ trong _TOTAL_ giảng viên",
+                    lengthMenu: "Hiển thị _MENU_ câu hỏi",
+                    search: "Tìm kiếm:",
+                    paginate: {
+                        "first": "First",
+                        "last": "Last",
+                        "next": ">>",
+                        "previous": "<<"
+                    }
+                },
+                pageLength: 20
+            });
+        })
+    </script>
+ } 
